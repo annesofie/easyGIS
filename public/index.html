@@ -2,18 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="http://openlayers.org/en/v3.13.1/css/ol.css" type="text/css"/>
+    <link rel="stylesheet" href="/stylesheets/style.css"/>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+
     <title>Kult</title>
 
 </head>
-<body>
-    <h1>hei</h1>
+<body ng-app="easygis">
+
+    <ng-view></ng-view>
 
 
-
+    <script src="//openlayers.org/en/v3.13.1/build/ol.js" type="text/javascript"></script>
 
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/angular-route/angular-route.min.js"></script>
     <script src="javascripts/angular/app.js"></script>
+    <script src="javascripts/angular/controllers/mapController.js"></script>
+    <script src="javascripts/angular/controllers/infoController.js"></script>
+
+
+
 </body>
 </html>
