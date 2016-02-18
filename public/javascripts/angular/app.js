@@ -20,6 +20,14 @@ easygis.config(function($routeProvider) {
                 templateUrl: 'views/infowindow.html'
 
             })
+        .when('/back',{
+            controller: 'mapController',
+            templateUrl: 'views/frontpage.html'
+        })
+        .when('/menu', {
+            controller: 'mapController',
+            templateUrl: 'views/menu.html'
+        })
         .otherwise({ redirectTo: '/'});
 
 });

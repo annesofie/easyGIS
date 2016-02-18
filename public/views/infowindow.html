@@ -1,6 +1,25 @@
-<div id="infotekst" ng-class="infotext">
+<div id="infotekst">
+    <div class="row">
+        <div class="col-xs-3">
+           <a ng-href="#/back" style="color: darkgreen"><i class="fa fa-arrow-left fa-4x"></i></a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3">
 
-    {{ infotext }}
-    <h4>info window</h4>
+        </div>
+        <div class="col-xs-5">
+            <h4>EasyGIS</h4>
+            <p><i>EasyGIS er en webapplikasjon, laget for å hjelpe nybegynnere å komme igang med å bruke ulike
+            geometriske operasjoner på kart.<i/></p>
+            <br>
+            <h5><b>Meny</b></h5>
+            <p>Trykk på meny og du vil få opp en meny med alle tilgjengelige funksjoner.
+                Denne menyen inneholder de ulike operasjonene
+            du kan utføre på kartet. Du kan også endre, og legge på flere datasett oppå kartet ditt.</p>
 
+            {{infotext}}
+
+        </div>
+    </div>
 </div>
