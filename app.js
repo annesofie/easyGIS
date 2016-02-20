@@ -12,7 +12,8 @@ var assert = require('assert');
 
 //Mongoose, open a connectin to easygis1 database
 mongoose.connect('mongodb://localhost/easygis1');
-var kitty = require('./models/kitty.js')
+var kitty = require('./models/kitty.js');
+var Todo = require('./models/Todo.js');
 
 //Notifies if we connect successfully
 var db = mongoose.connection;
@@ -22,28 +23,12 @@ db.once('open', function() {
 });
 
 
-/*
-var fluffy = kitty.create( { name: 'Fluffy' })
-
-silence.save(function(err, silence) {
-  if(err) return console.error(err);
-  else {
-    console.log('silence added to easygis1');
-  }
-  silence.speak;
-});
-fluffy.save(function(err, fluffy) {
-  if(err) return console.error(err);
-  else {
-    console.log('fluffy added to easygis1');
-  }
-  fluffy.speak;
-}) */
-
-
-
 var app = express();
 
+
+//Require Routes
+var todos = require('./routes/todos.js');
+app.use('/todo', todos);
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -86,16 +71,8 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-var silence = kitty.create( { name: 'Fluffy' }, function(err, silence) {
-  if(err) return console.error(err);
-  console.log('silence added to easygis1');
-});
 
-kitty.find({ name: 'Fluffy'}, function (err, kittens) {
+Todo.create( { name: 'Trene', completed: false}, function(err, trening) {
   if (err) return console.error(err);
-  for (i=0; i<kittens.length; i++) {
-    console.log(kittens[i].name);
-  }
-})
-
-
+  console.log('added');
+});
