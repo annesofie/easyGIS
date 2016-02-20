@@ -99,7 +99,6 @@ easygis.controller('mapController', ['$scope', '$timeout', function ($scope, $ti
         $scope.drawSource = new ol.source.Vector({wrapX: false});
         $scope.vectorSource = new ol.source.Vector({wrapX: false});
 
-
         //Layer for drawing
         var vector = new ol.layer.Vector({
             source: $scope.drawSource,
@@ -119,21 +118,25 @@ easygis.controller('mapController', ['$scope', '$timeout', function ($scope, $ti
                 })
             })
         });
-
         var map = new ol.Map({
             target: 'map',
             layers: [
                 new ol.layer.Tile({
                     source: new ol.source.MapQuest({layer: 'osm'})
                 }),
-                vector],
+                vector
+            ],
             view: new ol.View({
                 center: ol.proj.fromLonLat([10.421906, 63.446827]),   //OBS long, lat
                 zoom: 7
             })
         });
+
         return map;
     };
+
+
+
 }]);
 
 
