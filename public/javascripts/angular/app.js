@@ -5,6 +5,7 @@
 var easygis = angular.module("easygis", ['ngRoute']);
 
 
+
 easygis.config(function($routeProvider) {
 
     $routeProvider

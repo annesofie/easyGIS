@@ -12,8 +12,9 @@ var assert = require('assert');
 
 //Mongoose, open a connectin to easygis1 database
 mongoose.connect('mongodb://localhost/easygis1');
-var kitty = require('./models/kitty.js');
-var Todo = require('./models/Todo.js');
+var Point = require('./models/point.js');
+var Polygon = require('./models/polygon.js');
+
 
 //Notifies if we connect successfully
 var db = mongoose.connection;
@@ -21,7 +22,8 @@ db.on('error', console.error.bind(console, 'connection error: '));
 db.once('open', function() {
   console.log('Connected to easygis1');
 });
-
+<
+db.restaurants.findOne();
 
 var app = express();
 
@@ -29,6 +31,7 @@ var app = express();
 //Require Routes
 var todos = require('./routes/todos.js');
 app.use('/todo', todos);
+
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -71,8 +74,3 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-
-Todo.create( { name: 'Trene', completed: false}, function(err, trening) {
-  if (err) return console.error(err);
-  console.log('added');
-});
