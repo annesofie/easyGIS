@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="bower_components/cartodb.js/themes/css/cartodb.css"/>
+    <link rel="stylesheet" href="bower_components/angular-material/angular-material.min.css"/>
+    <link rel="stylesheet" href="bower_components/leaflet/leaflet.css"/>
     <link rel="stylesheet" href="/stylesheets/style.css"/>
 
-    <title>Kult</title>
+    <title>EasyGIS</title>
 
 </head>
 <body ng-app="easygis">
@@ -21,29 +23,22 @@
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="bower_components/angular-route/angular-route.min.js"></script>
-    <script src="bower_components/ng-file-upload/ng-file-upload.min.js"></script>
+    <script src="bower_components/ng-file-upload/ng-file-upload-all.min.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.min.js"></script>
+    <script src="bower_components/angular-aria/angular-aria.min.js"></script>
+    <script src="bower_components/angular-messages/angular-messages.min.js"></script>
+    <script src="bower_components/angular-material/angular-material.min.js"></script>
+    <script src="bower_components/leaflet/leaflet.js"></script>
+    <script src="javascripts/vendor/angular-leaflet-directive.min.js"></script>
+
     <script src="http://openlayers.org/en/v3.0.0/build/ol.js" type="text/javascript"></script>
+
     <script src="javascripts/vendor/ol.js"></script>
     <script src="javascripts/angular/app.js"></script>
     <script src="javascripts/angular/controllers/mapController.js"></script>
     <script src="javascripts/angular/controllers/infoController.js"></script>
+    <script src="javascripts/angular/controllers/menuController.js"></script>
 
-
-    <!-- Templates -->
-    <script type="text/ng-template" id="/todos.html">
-        Search: <input type="text" ng-model="search.name">
-        <ul>
-            <li ng-repeat="todo in todos | filter: search">
-                <input type="checkbox" ng-model="todo.complete">
-                <a href="#/{{$index}}">{{todo.name}}</a>
-            </li>
-        </ul>
-    </script>
-    <script type="text/ng-template" id="/todoDetails.html">
-        <h1>{{todo.name}}</h1>
-        completed: <input type="checkbox" ng-model="todo.completed">
-        note: <textarea>{{ todo.note }}</textarea>
-    </script>
 
 </body>
 </html>

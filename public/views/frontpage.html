@@ -17,5 +17,73 @@
     </div>
 </div>
 <div class="row">
-    <div id="map" class="map"></div>
+    <div class="col-md-10">
+        <div id="map" class="map"></div>
+    </div>
+    <div class="col-md-2">
+        <div ng-controller="MenyCtrl" layout="column" ng-cloak="" class="sidenavdemoBasicUsage" ng-app="MyApp">
+            <section layout="row" flex="">
+                <md-content flex="" layout-padding="">
+                    <div layout="column" layout-fill="" layout-align="top center">
+                        <h3>Meny<h3/>
+                            <div>
+                                <md-button ng-click="toggleBuff ()" ng-hide="isOpenBuff()" class="md-primary">
+                                    Buffer
+                                </md-button>
+                            </div>
+                            <div>
+                                <md-button ng-click="toggleInter()" ng-hide="isOpenInter()" class="md-primary">
+                                    Intersection
+                                </md-button>
+                            </div>
+                    </div>
+                    <div flex=""></div>
+                </md-content>
+
+                <md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="buff">
+                    <md-toolbar class="md-theme-light">
+                        <h1 class="md-toolbar-tools">Sidenav Right</h1>
+                    </md-toolbar>
+                    <md-content ng-controller="BuffCtrl" layout-padding="">
+                        <form>
+                            <md-input-container>
+                                <label for="testInput">Buffer [meter]</label>
+                                <input type="text" id="testInput" ng-model="data" md-autofocus="">
+                            </md-input-container>
+                        </form>
+                        <md-button ng-click="close()" class="md-primary">
+                            Close Buffer
+                        </md-button>
+                    </md-content>
+                </md-sidenav>
+                <md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="inter">
+
+                    <md-toolbar class="md-theme-light">
+                        <h1 class="md-toolbar-tools">Intersection</h1>
+                    </md-toolbar>
+                    <md-content ng-controller="InterCtrl" layout-padding="">
+                        <form>
+                            <md-input-container>
+                                <label for="testInput">Layer</label>
+                                <input type="text" id="testInput" ng-model="data" md-autofocus="">
+                            </md-input-container>
+                        </form>
+                        <md-button ng-click="close()" class="md-primary">
+                            Close Intersection
+                        </md-button>
+                    </md-content>
+
+                </md-sidenav>
+
+            </section>
+
+        </div>
+
+        <!--
+        Copyright 2016 Google Inc. All Rights Reserved.
+        Use of this source code is governed by an MIT-style license that can be in foundin the LICENSE file at http://material.angularjs.org/license.
+        -->
+        <div id="map" ngf-drop ng-model="file" ngf-multiple="false" ngf-drag-over-class="'dragover'"></div>
+    </div>
 </div>
+

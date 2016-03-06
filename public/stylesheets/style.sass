@@ -1,10 +1,64 @@
-body
-  padding: 0px
-  padding-top: 20px
-  background: linear-gradient(to left, lightgrey, #c26cfd)
 
-a
-  color: #00B7FF
+// Colors
+$gray: #eee
+
+// Angular
+[ng-click]
+  &:hover
+    cursor: pointer
+
+// Main content bg color
+md-content.md-default-theme
+  background-color: $gray
+
+
+// Navigation drawer pattern: https://www.google.com/design/spec/patterns/navigation-drawer.html#navigation-drawer-specs
+md-sidenav
+  & > md-toolbar
+    padding: 15px
+    height: 150px
+    max-height: 150px
+
+  & md-list-item.md-2-line .md-list-item-text
+    padding-top: 14px
+    padding-bottom: 12px
+
+  & md-divider
+    margin-top: 4px
+    margin-bottom: 4px
+
+// White svg icons in toolbar and fab
+md-sidenav
+  md-icon
+    fill: #737373
+    position: relative
+
+  .md-avatar
+    height: 64px
+    width: 64px
+
+/* More closely matches https://www.google.com/design/spec/components/lists.html#lists-specs */
+md-list-item.md-3-line
+  md-divider
+    &[md-inset]
+      left: 70px
+
+
+// Round avatar
+.md-avatar
+  & > svg
+    border-radius: 50%
+
+
+/* fade animation */
+.animate-show
+  transition: 0.75s ease-out opacity
+  opacity: 1
+  &.ng-hide
+    height: 0
+    min-height: 0
+    opacity: 0
+    overflow: hidden
 
 
 .map
@@ -18,64 +72,6 @@ a
   padding-left: 5%
   padding-right: 0px
 
-.container-fluid .navbar-header
-    margin-right: 5%
-    margin-bottom: 5px
-
-    color: white
-
-.navbar-nav
-    margin-top: 2px
-    margin-right: -15px
-    margin-bottom: 7.5px
-    margin-left: -15px
 
 .ol-zoom-in
   margin-left: 10px
-
-
-$bgDefault      : #c26cfd
-$bgHighlight    : #68fd5c
-$colDefault     : #ecf0f1
-$colHighlight   : #ecdbff
-$dropDown       : false
-
-.navbar-default
-  background: linear-gradient(to left, lightgrey, $bgDefault)
-  background-color:  $bgDefault
-  border-width: 0px
-  .navbar-brand
-    color: $colDefault
-    &:hover, &:focus
-      color: $colHighlight
-  .navbar-text
-    color: $colDefault
-  .navbar-nav
-    > li
-      > a
-        color: $colDefault
-        &:hover, &:focus
-          color: $bgHighlight
-  .navbar-toggle
-    border-color: $bgHighlight
-    &:hover, &:focus
-      background-color: $bgHighlight
-    .icon-bar
-      background-color: $colDefault
-  .navbar-collapse,
-  .navbar-form
-    border-color: $colDefault
-  .navbar-link
-    color: $colDefault
-    &:hover
-      color: $bgHighlight
-@media (max-width: 767px)
-  .navbar-default .navbar-nav .open .dropdown-menu
-    > li > a
-      color: $colDefault
-      &:hover, &:focus
-        color: $bgHighlight
-    > .active
-      > a, > a:hover, > a:focus
-        color: white
-        background-color: $bgHighlight

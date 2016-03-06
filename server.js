@@ -22,8 +22,6 @@ db.on('error', console.error.bind(console, 'connection error: '));
 db.once('open', function() {
   console.log('Connected to easygis1');
 });
-<
-db.restaurants.findOne();
 
 var app = express();
 

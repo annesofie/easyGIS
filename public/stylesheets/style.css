@@ -1,10 +1,46 @@
-body {
-  padding: 0px;
-  padding-top: 20px;
-  background: linear-gradient(to left, lightgrey, #c26cfd); }
+[ng-click]:hover {
+  cursor: pointer; }
 
-a {
-  color: #00B7FF; }
+md-content.md-default-theme {
+  background-color: #eee; }
+
+md-sidenav > md-toolbar {
+  padding: 15px;
+  height: 150px;
+  max-height: 150px; }
+
+md-sidenav md-list-item.md-2-line .md-list-item-text {
+  padding-top: 14px;
+  padding-bottom: 12px; }
+
+md-sidenav md-divider {
+  margin-top: 4px;
+  margin-bottom: 4px; }
+
+md-sidenav md-icon {
+  fill: #737373;
+  position: relative; }
+
+md-sidenav .md-avatar {
+  height: 64px;
+  width: 64px; }
+
+/* More closely matches https://www.google.com/design/spec/components/lists.html#lists-specs */
+md-list-item.md-3-line md-divider[md-inset] {
+  left: 70px; }
+
+.md-avatar > svg {
+  border-radius: 50%; }
+
+/* fade animation */
+.animate-show {
+  transition: 0.75s ease-out opacity;
+  opacity: 1; }
+  .animate-show.ng-hide {
+    height: 0;
+    min-height: 0;
+    opacity: 0;
+    overflow: hidden; }
 
 .map {
   height: 80%;
@@ -17,55 +53,7 @@ a {
   padding-left: 5%;
   padding-right: 0px; }
 
-.container-fluid .navbar-header {
-  margin-right: 5%;
-  margin-bottom: 5px;
-  color: white; }
-
-.navbar-nav {
-  margin-top: 2px;
-  margin-right: -15px;
-  margin-bottom: 7.5px;
-  margin-left: -15px; }
-
 .ol-zoom-in {
   margin-left: 10px; }
-
-.navbar-default {
-  background: linear-gradient(to left, lightgrey, #c26cfd);
-  background-color: #c26cfd;
-  border-width: 0px; }
-  .navbar-default .navbar-brand {
-    color: #ecf0f1; }
-    .navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus {
-      color: #ecdbff; }
-  .navbar-default .navbar-text {
-    color: #ecf0f1; }
-  .navbar-default .navbar-nav > li > a {
-    color: #ecf0f1; }
-    .navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
-      color: #68fd5c; }
-  .navbar-default .navbar-toggle {
-    border-color: #68fd5c; }
-    .navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
-      background-color: #68fd5c; }
-    .navbar-default .navbar-toggle .icon-bar {
-      background-color: #ecf0f1; }
-  .navbar-default .navbar-collapse,
-  .navbar-default .navbar-form {
-    border-color: #ecf0f1; }
-  .navbar-default .navbar-link {
-    color: #ecf0f1; }
-    .navbar-default .navbar-link:hover {
-      color: #68fd5c; }
-
-@media (max-width: 767px) {
-  .navbar-default .navbar-nav .open .dropdown-menu > li > a {
-    color: #ecf0f1; }
-    .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover, .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
-      color: #68fd5c; }
-  .navbar-default .navbar-nav .open .dropdown-menu > .active > a, .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover, .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
-    color: white;
-    background-color: #68fd5c; } }
 
 /*# sourceMappingURL=style.css.map */

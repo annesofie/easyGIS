@@ -2,9 +2,7 @@
  * Created by AnneSofie on 13.02.2016.
  */
 
-var easygis = angular.module("easygis", ['ngRoute']);
-
-
+var easygis = angular.module("easygis", ['ngMaterial', 'ngMessages', 'ngRoute', 'ngFileUpload', 'leaflet-directive']);
 
 easygis.config(function($routeProvider) {
 
@@ -12,8 +10,8 @@ easygis.config(function($routeProvider) {
         .when('/',
 
             {
-                controller: 'mapController',
-                templateUrl: 'views/frontpage.html'
+                controller: 'menuController',
+                templateUrl: 'views/map_frontpage.html'
             })
         .when('/info',
             {

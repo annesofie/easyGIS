@@ -2,7 +2,7 @@
  * Created by AnneSofie on 13.02.2016.
  */
 
-easygis.controller('mapController', ['$scope', '$timeout', function ($scope, $timeout) {
+easygis.controller('mapController', ['$scope', '$timeout', function ($scope, $timeout, fileHandler) {
 
     $scope.map = init();
 
@@ -93,6 +93,15 @@ easygis.controller('mapController', ['$scope', '$timeout', function ($scope, $ti
             $scope.selectedFeatures.clear();
         });
     };
+
+    $scope.$watch('file', function() {
+        if ($scope.file != null) {
+            console.log($scope.file);
+            fileHandler.handleFile($scope.file).then(function(data) {
+                console.log('inni filehandler');
+            })
+        }
+    });
 
     function init() {
 
