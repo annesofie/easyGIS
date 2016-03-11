@@ -12,6 +12,7 @@
     "debug": "~2.2.0",
     "express": "~4.13.1",
     "leaflet": "0.7.7",
+    "leaflet-draw": "0.3.0",
     "jade": "~1.11.0",
     "mongodb": "^2.1.7",
     "mongoose": "^4.4.4",

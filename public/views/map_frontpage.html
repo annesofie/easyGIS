@@ -7,10 +7,18 @@
             <div class="md-body-1">Choose operation from the list</div>
         </md-toolbar>
         <md-list>
-            <md-list-item class="md-2-line" ng-repeat="item in menu" role="link" md-ink-ripple>
-                <md-icon md-svg-icon="{{item.icon}}" aria-label="{{item.title}}"></md-icon>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="setType('polygon')">
+                <md-tooltip md-direction="right">Click here to Add Polygon</md-tooltip>
+                <md-icon md-svg-icon="image:ic_crop_square_24px" aria-label="Add Polygon"></md-icon>
                 <div class="md-list-item-text">
-                    <span class="md-body-2">{{item.title}}</span>
+                    <span class="md-body-2">Add Polygon</span>
+                </div>
+            </md-list-item>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showBuffer()">
+                <md-tooltip md-direction="right">Click here to create buffer</md-tooltip>
+                <md-icon md-svg-icon="av:ic_album_24px" aria-label="Add Point"></md-icon>
+                <div class="md-list-item-text">
+                    <span class="md-body-2">Create buffer</span>
                 </div>
             </md-list-item>
             <md-divider></md-divider>
@@ -24,7 +32,9 @@
         </md-list>
     </md-sidenav>
     <div layout="column" class="relative" layout-fill role="main">
-        <md-button class="md-fab md-fab-bottom-right" aria-label="Add" ng-click="showAdd($event)"> <!-- ADD DATASETT -->
+        <md-button class="md-fab md-fab-bottom-right" aria-label="Add" ng-click="showAdd($event)">
+            <!-- ADD DATASETT -->
+            <md-tooltip md-direction="top">Upload a new dataset</md-tooltip>
             <md-icon md-svg-icon="content:ic_add_24px" aria-label="Plus"></md-icon>
         </md-button>
         <md-toolbar class="animate-show md-tall md-whiteframe-z1" ng-show="!showSearch">
@@ -65,7 +75,8 @@
             </div>
         </md-toolbar>
         <md-content flex>
-            <leaflet lf-center="center" width="100%" height="600px"></leaflet>
+            <leaflet lf-center="center" controls="controls" width="100%" height="600px"></leaflet>
+            <PRE>Saved items :{{savedItems | json}}</PRE>
         </md-content>
     </div>
 </div>
