@@ -8,11 +8,11 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
     $scope.toggleSearch = function(element) {
         $scope.showSearch = !$scope.showSearch;
     };
-
     // Sidenav toggle
     $scope.toggleSidenav = function(menuId) {
         $mdSidenav(menuId).toggle();
     };
+
 
     $scope.addtype = '';
     $scope.savedItems = [];
@@ -31,6 +31,8 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
     ];
 
     // **  Map
+
+    // -- Leaflet Draw
     var drawnItems = new L.FeatureGroup();
     for (var i = 0; i < $scope.savedItems.length; i++) {
         L.geoJson($scope.savedItems[i].geoJSON, {
@@ -52,6 +54,7 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
         },
         controls: {
             draw: {
+                position: 'topright',
                 draw: {},
                 edit: { featureGroup: drawnItems
                 }
@@ -86,6 +89,7 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
                 id: layer._leaflet_id,
                 geoJSON: geoJSON
             });
+            printLayers();
         });
         map.on('draw:edited', function(e) {
             var layers = e.layers;
@@ -108,7 +112,105 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
                     }
                 }
             });
+            printLayers();
         });
+
+        $scope.layer = null;
+        $scope.layers = null;
+        $scope.loadLayers = function() {
+            return  $scope.layers = $scope.layers || [{ id:1, name: 'Pub'}, { id:2, name: 'Roads'}, { id: 3, name: 'Birkebeinerroute'}, {id:0, name: 'Clean'}];
+        };
+
+        // -- CartoDB layer
+        var cartodbLayer = [];
+
+        $scope.getLayerInfo = function() {
+            var name, table, sqlCDB, cssCDB;
+            console.log($scope.layer);
+            name = $scope.layer.name;
+            switch (name) {
+                case 'Pub':
+                    table = 'num_pubs_kvm_kommune';
+                    sqlCDB = 'SELECT * FROM ' + table;
+                    cssCDB = '#num_pubs_kvm_kommune {polygon-fill: #FF6600; }';
+                    break;
+                case 'Roads':
+                    table = 'pub_in_norway';
+                    sqlCDB = 'SELECT * FROM ' + table;
+                    cssCDB = '#' + table + '{marker-fill: #FF6600; }';
+                    break;
+                case 'Birkebeinerroute':
+                    table = 'birkebeinerloypen';
+                    sqlCDB = 'SELECT * FROM ' + table;
+                    cssCDB = '#' + table + '{line-color: #FF6600; }';
+                    break;
+
+            }
+            var layerData = {
+                user_name: 'anneri',
+                sublayers: [{
+                    name: name,
+                    sql: sqlCDB,
+                    cartocss: cssCDB
+                }]
+            };
+            $scope.loadCartoDBLayer(layerData);
+        };
+
+        $scope.createBufferLayer = function(dist, layername) {
+            var name, table, sqlCDB, cssCDB;
+            name = layername;
+
+            switch (name) {
+                case 'Pub':
+                    table = 'num_pubs_kvm_kommune';
+                    cssCDB = '#num_pubs_kvm_kommune {polygon-fill: #FF6600; }';
+                    break;
+                case 'Roads':
+                    table = 'pub_in_norway';
+                    cssCDB = '#' + table + '{marker-fill: #FF6600; }';
+                    break;
+                case 'Birkebeinerroute':
+                    table = 'birkebeinerloypen';
+                    cssCDB = '#' + table + '{polygon-fill: #2167AB; }';
+                    break;
+                case 'Restaurants':
+                    table: 'restaurants_trondheim';
+                    cssCDB: '#' + table + '{polygon-fill: #F11810; }';
+                    break;
+            }
+            sqlCDB = 'SELECT ST_Buffer(the_geom_webmercator, ' + dist + ') As the_geom_webmercator, cartodb_id FROM ' + table;
+            var layerData = {
+                user_name: 'anneri',
+                sublayers: [{
+                    name: name,
+                    sql: sqlCDB,
+                    cartocss: cssCDB
+                }]
+            };
+            $scope.loadCartoDBLayer(layerData);
+        };
+
+        $scope.loadCartoDBLayer = function(layerData) {
+
+            leafletData.getMap().then(function(map) {
+
+                cartodb.Tiles.getTiles(layerData, function(tilesUrl, err) {
+                    if (tilesUrl == null) {
+                        console.log('error' + err.errors.join('/n'));
+                        return;
+                    }
+                    if (cartodbLayer) {
+                        map.removeLayer(cartodbLayer);
+                    }
+                    cartodbLayer = L.tileLayer(tilesUrl.tiles[0]);
+                    cartodbLayer.addTo(map);
+                    window.alert('layer added to map');
+                });
+            });
+
+        };
+
     });
 
 
@@ -142,12 +244,14 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
     $scope.showBuffer = function(ev) {
         $mdDialog.show({
                 controller: DialogController,
-                template: '<md-dialog aria-label="Form"><md-content class="md-padding"> <form name="buffer"> <div layout layout-sm="column"><md-menu-content width="4"> <md-menu-item ng-repeat="item in [1, 2, 3]"> <md-button ng-click="">Option {{ item }}</md-button> </md-menu-item></md-menu-content> </md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="l.name"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="answer(\'not useful\')"> Cancel </md-button> <md-button id="uploadFileBtn" ng-click="answer()" class="md-primary"> Execute buffer </md-button> </div></md-dialog>',
+                template: '<md-dialog aria-label="Form"><md-content class="md-padding"> <form name="buffer"> <div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="layer" md-on-open=""> <md-option ng-value="layer" ng-repeat="layer in layers">{{layer.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="answer(\'not useful\')"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary"> Execute buffer </md-button> </div></md-dialog>',
                 targetEvent: ev,
                 clickOutsideToClose: false
             })
             .then(function(answer) {
+                console.log(answer[0] + ' 0 and 1 ' + answer[1]);
                 $scope.alert = 'You said the information was "' + answer + '".';
+                $scope.createBufferLayer(answer[0], answer[1]);
             }, function() {
                 $scope.alert = 'You cancelled the dialog.';
             });
@@ -169,6 +273,8 @@ easygis.controller('ListBottomSheetCtrl', function($scope, $mdBottomSheet) {
 });
 
 function DialogController($scope, $mdDialog, Upload) {
+    $scope.bufferdist = null;
+    $scope.layer = null;
     $scope.hide = function() {
         $mdDialog.hide();
     };
@@ -176,8 +282,12 @@ function DialogController($scope, $mdDialog, Upload) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        $mdDialog.hide(answer);
+        var dist = $scope.bufferdist;
+        var layerName = $scope.layer.name;
+        var bufferInfo = [dist, layerName];
+        $mdDialog.hide(bufferInfo);
     };
+    $scope.layers = $scope.layers || [{ id:1, name: 'Pub'}, { id:2, name: 'Roads'}, { id: 3, name: 'Birkebeinerroute'}, { id:4, name: 'Restaurants'}];
 };
 
 
