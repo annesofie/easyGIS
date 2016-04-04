@@ -13,15 +13,29 @@
                 <md-select placeholder="Choose a layer" name="layerChoice" ng-model="layer" md-on-open="loadLayers()" flex="60" md-on-close="getLayerInfo()">
                     <md-option ng-value="layer" ng-repeat="layer in layers">{{layer.name}}</md-option>
                 </md-select>
-                <div flex="20">
+                <div flex="15">
 
                 </div>
             </md-list-item>
-            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showBuffer()">
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showBufferWindow()">
                 <md-tooltip md-direction="right">Click here to create buffer</md-tooltip>
-                <md-icon md-svg-icon="av:ic_album_24px" aria-label="Add Point"></md-icon>
-                <div class="md-list-item-text">
+                <md-icon md-svg-icon="av:ic_album_24px" aria-label="Add Point" flex="12"></md-icon>
+                <div class="md-list-item-text" flex="60">
                     <span class="md-body-2">Create buffer</span>
+                </div>
+            </md-list-item>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showIntersectionWindow()">
+                <md-tooltip md-direction="right">Click here to find interection between two layers</md-tooltip>
+                <md-icon md-svg-icon="editor:ic_multiline_chart_24px" flex="12"></md-icon>
+                <div class="md-list-item-text" flex="60">
+                    <span class="md-body-2">Find intersection</span>
+                </div>
+            </md-list-item>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showContainsWindow()">
+                <md-tooltip md-direction="right">Click here to find all the points inside a geographic area</md-tooltip>
+                <md-icon md-svg-icon="editor:ic_multiline_chart_24px" flex="12"></md-icon>
+                <div class="md-list-item-text" flex="60">
+                    <span class="md-body-2">Contains</span>
                 </div>
             </md-list-item>
             <md-divider></md-divider>
