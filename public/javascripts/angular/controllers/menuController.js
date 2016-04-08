@@ -2,7 +2,7 @@
  * Created by AnneSofie on 14.02.2016.
  */
 
-easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSidenav', '$mdDialog', 'leafletData', function($scope, Upload,$mdBottomSheet, $mdSidenav, $mdDialog, leafletData){
+easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSidenav', '$mdDialog', 'leafletData', 'BufferLayer', function($scope, Upload,$mdBottomSheet, $mdSidenav, $mdDialog, leafletData, BufferLayer){
 
     // Toolbar search toggle
     $scope.toggleSearch = function(element) {
@@ -13,22 +13,8 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
         $mdSidenav(menuId).toggle();
     };
 
-
     $scope.addtype = '';
     $scope.savedItems = [];
-
-    $scope.admin = [
-        {
-            link : '',
-            title: 'Trash',
-            icon: 'action:ic_delete_24px'
-        },
-        {
-            link : 'showListBottomSheet($event)',
-            title: 'Settings',
-            icon: 'action:ic_settings_24px'
-        }
-    ];
 
     // **  Map
 
@@ -132,13 +118,7 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
         var layerData = getLayerData(name, 0, 0);
         $scope.loadCartoDBLayer(layerData);
     };
-    $scope.createBufferLayer = function(dist, layername) {
-        var layerData = getLayerData(layername, dist, 1);
-        $scope.loadCartoDBLayer(layerData);
-    };
-    $scope.calculateDistance = function() {
 
-    };
     $scope.loadCartoDBLayer = function(layerData) {
         console.log(layerData);
         leafletData.getMap().then(function(map) {
@@ -153,7 +133,32 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
                 }
                 cartodbLayer = L.tileLayer(tilesUrl.tiles[0]);
                 cartodbLayer.addTo(map);
-                window.alert('layer added to map');
+            });
+        });
+
+    };
+
+    $scope.createBufferLayer = function(dist, layername) {
+        var layerData = getLayerData(layername, dist, 1);
+        $scope.loadBufferLayer(layerData);
+    };
+
+    $scope.loadBufferLayer = function(layerData) {
+        console.log(layerData);
+        leafletData.getMap().then(function(map) {
+            cartodb.Tiles.getTiles(layerData, function(tilesUrl, err) {
+                if (tilesUrl === null) {
+                    console.log(tilesUrl);
+                    console.log('error: ' + err.errors.join('/n'));
+                    return;
+                }
+                var buffLayer = BufferLayer.getBuffLayer();
+                if (buffLayer) {
+                    map.removeLayer(buffLayer);
+                }
+                var name = layerData.sublayers.name + ' buffer';
+                BufferLayer.addBuffLayer(L.tileLayer(tilesUrl.tiles[0]), name);
+                L.tileLayer(tilesUrl.tiles[0]).addTo(map);
             });
         });
 
@@ -236,7 +241,7 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
 
     $scope.showAdd = function(ev) {
         $mdDialog.show({
-                controller: DialogController,
+                controller: DialogControllerBuff,
                 templateUrl: 'views/fileupload.tmpl.html',
                 targetEvent: ev,
                 clickOutsideToClose: true
@@ -250,7 +255,7 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
 
     $scope.showBufferWindow = function(ev) {
         $mdDialog.show({
-                controller: DialogController,
+                controller: DialogControllerBuff,
                 template: '<md-dialog aria-label="Form"><md-content class="md-padding"> <form name="buffer"><h3>Buffer settings</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="layer" md-on-open=""> <md-option ng-value="layer" ng-repeat="layer in layers">{{layer.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary"> Execute buffer </md-button> </div></md-dialog>',
                 targetEvent: ev,
                 clickOutsideToClose: true
@@ -309,7 +314,7 @@ easygis.controller('ListBottomSheetCtrl', function($scope, $mdBottomSheet) {
     };
 });
 
-function DialogController($scope, $mdDialog) {
+function DialogControllerBuff($scope, $mdDialog, BufferLayer) {
     $scope.bufferdist = null;
     $scope.layer = null;
 
@@ -328,7 +333,7 @@ function DialogController($scope, $mdDialog) {
 
     $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
 }
-function DialogController_int($scope, $mdDialog) {
+function DialogController_int($scope, $mdDialog, BufferLayer) {
     $scope.layer_1 = null;
     $scope.layer_2 = null;
 
@@ -343,7 +348,9 @@ function DialogController_int($scope, $mdDialog) {
         var bufferInfo = [layerName];
         $mdDialog.hide(bufferInfo);
     };
-    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
+    var bufflay = BufferLayer.getBuffLayer();
+
+    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}, {id: 6, name: bufflay.name}];
 }
 function DialogController_cont($scope, $mdDialog) {
     $scope.layer_polygon = null;

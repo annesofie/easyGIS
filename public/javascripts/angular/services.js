@@ -44,6 +44,35 @@ easygis.factory('Upload', ['$q', function(){
         return deferred.promise;
     }
 
-
-
 }]);
+
+easygis.factory('Layers', function(){
+
+    var layers = [];
+
+    return layers;
+});
+
+easygis.factory('BufferLayer', function(){
+
+    var bufflayer = {'layer': 'objs', 'name': 'hei'};
+
+    var addBuffLayer = function(newobj, name) {
+        bufflayer.layer = newobj;
+        bufflayer.name = name;
+    };
+    var removeBuffLayer = function() {
+        if(bufflayer){
+            bufflayer.pop();
+        }
+    };
+    var getBuffLayer = function(){
+        return bufflayer;
+    };
+
+    return {
+        addBuffLayer: addBuffLayer,
+        removeBuffLayer: removeBuffLayer,
+        getBuffLayer: getBuffLayer
+    };
+});
