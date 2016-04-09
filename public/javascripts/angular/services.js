@@ -46,33 +46,55 @@ easygis.factory('Upload', ['$q', function(){
 
 }]);
 
-easygis.factory('Layers', function(){
+easygis.factory('PointLayers', function(){
 
-    var layers = [];
+    var layers = { layers: [
+        {id: 0, name: 'Pub', layer: 'empty'},
+        {id: 1, name: 'Birkebeinerroute', layer: 'empty'},
+        {id: 2, name: 'Restaurants', layer: 'empty'},
+        {id: 3, name: 'Innbyggertall', layer: 'empty'},
+        {id: 4, name: 'Trafikkmengde', layer: 'empty'}
+    ]};
+
+
 
     return layers;
 });
 
-easygis.factory('BufferLayer', function(){
+easygis.factory('PolygonLayer', function(){
 
-    var bufflayer = {'layer': 'objs', 'name': 'hei'};
+    var polylayer = { layers: [
+        {id: 0, name: 'Pub', layer: 'empty'},
+        {id: 1, name: 'Birkebeinerroute', layer: 'empty'},
+        {id: 2, name: 'Restaurants', layer: 'empty'},
+        {id: 3, name: 'Innbyggertall', layer: 'empty'},
+        {id: 4, name: 'Trafikkmengde', layer: 'empty'}
+    ]};
 
-    var addBuffLayer = function(newobj, name) {
-        bufflayer.layer = newobj;
-        bufflayer.name = name;
+
+    var addBuffLayer = function(id, name, newobj) { //Add new polygonlayer to the end
+        polylayer.layers.push(
+            {id: id, name: name, layer: newobj}
+        );
     };
-    var removeBuffLayer = function() {
-        if(bufflayer){
-            bufflayer.pop();
+    var removeBuffLayer = function(id) {
+        if(polylayer.id == id){
+            polylayer.layers.pop();
         }
     };
-    var getBuffLayer = function(){
-        return bufflayer;
+    var getPolygonLayer = function(){
+        return polylayer.layers;
+    };
+    var getLayer = function(id){
+        if(polylayer.id == id){
+            return polylayer;
+        }
     };
 
     return {
         addBuffLayer: addBuffLayer,
         removeBuffLayer: removeBuffLayer,
-        getBuffLayer: getBuffLayer
+        getPolygonLayer: getPolygonLayer,
+        getlayer: getLayer
     };
 });

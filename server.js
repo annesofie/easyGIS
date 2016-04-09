@@ -10,7 +10,7 @@ var assert = require('assert');
 
 
 //Mongoose, open a connectin to easygis1 database
-mongoose.connect('mongodb://localhost/easygis1');
+mongoose.connect('mongodb://annesofie:annesofie@ds019980.mlab.com:19980/heroku_g393gx7d');
 var Point = require('./models/point.js');
 var Polygon = require('./models/polygon.js');
 
@@ -19,7 +19,7 @@ var Polygon = require('./models/polygon.js');
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error: '));
 db.once('open', function() {
-  console.log('Connected to easygis1');
+  console.log('Connected to mLab anne sofie ');
 });
 
 var app = express();

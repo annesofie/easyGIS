@@ -2,7 +2,8 @@
  * Created by AnneSofie on 14.02.2016.
  */
 
-easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSidenav', '$mdDialog', 'leafletData', 'BufferLayer', function($scope, Upload,$mdBottomSheet, $mdSidenav, $mdDialog, leafletData, BufferLayer){
+easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSidenav', '$mdDialog', 'leafletData', 'PolygonLayer',
+    function($scope, Upload,$mdBottomSheet, $mdSidenav, $mdDialog, leafletData, PolygonLayer){
 
     // Toolbar search toggle
     $scope.toggleSearch = function(element) {
@@ -15,6 +16,9 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
 
     $scope.addtype = '';
     $scope.savedItems = [];
+    if(PolygonLayer.getlayer(5)){
+        PolygonLayer.removeBuffLayer();
+    }
 
     // **  Map
 
@@ -105,14 +109,15 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
     $scope.layer = null;
     $scope.layers = null;
     $scope.loadLayers = function() {
-        return  $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
+
+        return  $scope.layers = PolygonLayer.getPolygonLayer();
     };
 
     // -- CartoDB layer
     var cartodbLayer = [];
 
     $scope.getLayerInfo = function() {
-        var name, table, sqlCDB, cssCDB;
+        var name;
         console.log($scope.layer);
         name = $scope.layer.name;
         var layerData = getLayerData(name, 0, 0);
@@ -120,7 +125,7 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
     };
 
     $scope.loadCartoDBLayer = function(layerData) {
-        console.log(layerData);
+        console.log(layerData.sublayers + ' layerdata');
         leafletData.getMap().then(function(map) {
             cartodb.Tiles.getTiles(layerData, function(tilesUrl, err) {
                 if (tilesUrl === null) {
@@ -140,11 +145,11 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
 
     $scope.createBufferLayer = function(dist, layername) {
         var layerData = getLayerData(layername, dist, 1);
-        $scope.loadBufferLayer(layerData);
+        console.log(layername);
+        $scope.loadBufferLayer(layerData, layername);
     };
 
-    $scope.loadBufferLayer = function(layerData) {
-        console.log(layerData);
+    $scope.loadBufferLayer = function(layerData, name) {
         leafletData.getMap().then(function(map) {
             cartodb.Tiles.getTiles(layerData, function(tilesUrl, err) {
                 if (tilesUrl === null) {
@@ -152,12 +157,11 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
                     console.log('error: ' + err.errors.join('/n'));
                     return;
                 }
-                var buffLayer = BufferLayer.getBuffLayer();
-                if (buffLayer) {
-                    map.removeLayer(buffLayer);
+                if (PolygonLayer.layer.id == 5) {
+                    map.removeLayer(PolygonLayer.getlayer('buff').layer);
                 }
-                var name = layerData.sublayers.name + ' buffer';
-                BufferLayer.addBuffLayer(L.tileLayer(tilesUrl.tiles[0]), name);
+                var buffname = name + ' as bufferlayer';
+                PolygonLayer.addBuffLayer('buff', buffname, L.tileLayer(tilesUrl.tiles[0]));
                 L.tileLayer(tilesUrl.tiles[0]).addTo(map);
             });
         });
@@ -198,6 +202,7 @@ easygis.controller('menuController', ['$scope', 'Upload','$mdBottomSheet','$mdSi
             sql = getSQL_buffer(table, dist);
             cssCDB = changeCSS_polygon(table);
         }
+        console.log(name + ' name');
         var layerData = {
             user_name: 'anneri',
             sublayers: [{
@@ -314,7 +319,7 @@ easygis.controller('ListBottomSheetCtrl', function($scope, $mdBottomSheet) {
     };
 });
 
-function DialogControllerBuff($scope, $mdDialog, BufferLayer) {
+function DialogControllerBuff($scope, $mdDialog, PolygonLayer) {
     $scope.bufferdist = null;
     $scope.layer = null;
 
@@ -329,11 +334,14 @@ function DialogControllerBuff($scope, $mdDialog, BufferLayer) {
         var layerName = $scope.layer.name;
         var bufferInfo = [dist, layerName];
         $mdDialog.hide(bufferInfo);
+
     };
+
+
 
     $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
 }
-function DialogController_int($scope, $mdDialog, BufferLayer) {
+function DialogController_int($scope, $mdDialog, PolygonLayer) {
     $scope.layer_1 = null;
     $scope.layer_2 = null;
 
@@ -348,9 +356,9 @@ function DialogController_int($scope, $mdDialog, BufferLayer) {
         var bufferInfo = [layerName];
         $mdDialog.hide(bufferInfo);
     };
-    var bufflay = BufferLayer.getBuffLayer();
+    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
+    var buffLayer  = BufferLayer.getBuffLayer();
 
-    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}, {id: 6, name: bufflay.name}];
 }
 function DialogController_cont($scope, $mdDialog) {
     $scope.layer_polygon = null;
