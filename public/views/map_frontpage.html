@@ -3,6 +3,9 @@
     <md-sidenav layout="column" class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
         <md-toolbar class="md-hue-2">
             <span flex></span>
+            <div class="row spinners" ng-show="loading">
+                <div class="spinner spinner-bounce-middle"></div>
+            </div>
             <div class="md-body-2">Map operations</div>
             <div class="md-body-1">Choose operation from the list</div>
         </md-toolbar>

@@ -8,7 +8,6 @@ easygis.config(function($routeProvider) {
 
     $routeProvider
         .when('/',
-
             {
                 controller: 'menuController',
                 templateUrl: 'views/map_frontpage.html'

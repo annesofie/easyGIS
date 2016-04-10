@@ -11,9 +11,7 @@ var assert = require('assert');
 
 //Mongoose, open a connectin to easygis1 database
 mongoose.connect('mongodb://annesofie:annesofie@ds019980.mlab.com:19980/heroku_g393gx7d');
-//var Point = require('./models/point.js');
-//var Polygon = require('./models/polygon.js');
-
+var polygonLayers = require('./models/polygonLayers.js');
 
 //Notifies if we connect successfully
 var db = mongoose.connection;
@@ -26,8 +24,7 @@ var app = express();
 
 
 //Require Routes
-var todos = require('./routes/todos.js');
-app.use('/todo', todos);
+var api = require('./routes/api.js');
 
 
 // uncomment after placing your favicon in /public
@@ -43,6 +40,15 @@ app.use(require('node-sass-middleware')({
   sourceMap: true
 }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+// routes
+app.use('/layers/', api);
+
+app.get('/', function(req, res) {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 
 
 // catch 404 and forward to error handler

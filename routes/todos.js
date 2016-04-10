@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var mongoose = require('mongoose');
-var Todo = require('../models/Todo.js');
+var Todo = require('../models/polygonLayers.js');
 
 
 /* Get /todo */
