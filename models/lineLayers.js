@@ -1,3 +1,7 @@
+/**
+ * Created by AnneSofie on 10.04.2016.
+ */
+
 var mongoose = require('mongoose');
 
 function inspector (val, schematype) {
@@ -7,13 +11,11 @@ function inspector (val, schematype) {
         return schematype.path + ' is not';
     }
 }
-
-var polygonLayerSchema = new mongoose.Schema({
+var lineLayerSchema = new mongoose.Schema({
     name: {type: String, required: true, get: inspector},
-    dist: {type: Number, min:0, get: inspector},
     tileURL: {type: String, get: inspector},
     datatype: {type: String, required: true, get: inspector},
     tablename: {type: String, get: inspector}   //Tablename in CartoDB
 });
 
-module.exports = mongoose.model('polygonLayers', polygonLayerSchema);
+module.exports = mongoose.model('lineLayers', lineLayerSchema);

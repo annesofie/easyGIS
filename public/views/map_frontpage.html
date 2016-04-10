@@ -6,8 +6,8 @@
             <div class="row spinners" ng-show="loading">
                 <div class="spinner spinner-bounce-middle"></div>
             </div>
-            <div class="md-body-2">Map operations</div>
-            <div class="md-body-1">Choose operation from the list</div>
+            <div class="md-body-2" ng-hide="loading">Map operations</div>
+            <div class="md-body-1" ng-hide="loading">Choose operation from the list</div>
         </md-toolbar>
         <md-list>
             <md-list-item class="md-2-line" role="link" md-ink-ripple>
@@ -27,7 +27,7 @@
                     <span class="md-body-2">Create buffer</span>
                 </div>
             </md-list-item>
-            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showIntersectionWindow()">
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="testlayerAdd()">
                 <md-tooltip md-direction="right">Click here to find interection between two layers</md-tooltip>
                 <md-icon md-svg-icon="editor:ic_multiline_chart_24px" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
@@ -48,6 +48,13 @@
                 <md-icon md-svg-icon="action:ic_delete_24px" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
                     <span class="md-body-2">Remove Layer</span>
+                </div>
+            </md-list-item>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showAddNewLayerToDatabaseWindow()">
+                <md-tooltip md-direction="right">Click here to add a new Layer from cartoDB to the layer list</md-tooltip>
+                <md-icon md-svg-icon="action:ic_note_add_24px" flex="12"></md-icon>
+                <div class="md-list-item-text" flex="60">
+                    <span class="md-body-2">Add new layer</span>
                 </div>
             </md-list-item>
         </md-list>

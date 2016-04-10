@@ -12,6 +12,9 @@ var assert = require('assert');
 //Mongoose, open a connectin to easygis1 database
 mongoose.connect('mongodb://annesofie:annesofie@ds019980.mlab.com:19980/heroku_g393gx7d');
 var polygonLayers = require('./models/polygonLayers.js');
+var pointLayers = require('./models/pointLayers.js');
+var lineLayers = require('./models/lineLayers.js');
+
 
 //Notifies if we connect successfully
 var db = mongoose.connection;

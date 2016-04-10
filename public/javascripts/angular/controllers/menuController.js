@@ -2,8 +2,8 @@
  * Created by AnneSofie on 14.02.2016.
  */
 
-easygis.controller('menuController', ['$scope', 'polygonLayerService','$mdBottomSheet','$mdSidenav', '$mdDialog', 'leafletData', 'PolygonLayer', '$http',
-    function($scope, polygonLayerService, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData, PolygonLayer, $http){
+easygis.controller('menuController', ['$scope', '$timeout','$mdBottomSheet','$mdSidenav', '$mdDialog', 'leafletData', 'polygonLayerService', 'pointLayerService', 'lineLayerService',
+    function($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData, polygonLayerService, pointLayerService, lineLayerService){
 
         // Toolbar search toggle
         $scope.toggleSearch = function(element) {
@@ -14,10 +14,54 @@ easygis.controller('menuController', ['$scope', 'polygonLayerService','$mdBottom
             $mdSidenav(menuId).toggle();
         };
 
-
         $scope.addtype = '';
         $scope.savedItems = [];
+
+        //Loading icon show or not show
         $scope.loading = false;
+
+        // ** Get layers available in database
+        $scope.layer = null;
+        $scope.layers = [];
+        $scope.loadLayers = function() {
+            $timeout(function(){
+                pointLayerService.getPointLayers().then(function (response) {
+                    for(var key in response.data){
+                        if(response.data.hasOwnProperty(key)){
+                            console.log(key);
+                            $scope.layer = { 'name': response.data[key].name, dist: 0, tileURL: response.data[key].tileURL, datatype: 'Point', tablename: response.data[key].tablename};
+                            $scope.layers.push($scope.layer);
+                        }
+                    }
+                }, function (response) {
+                    //Error
+                });
+                lineLayerService.getLineLayers().then(function (response) {
+                    for(var key in response.data){
+                        if(response.data.hasOwnProperty(key)){
+                            console.log(key);
+                            $scope.layer = { 'name': response.data[key].name, dist: 0,tileURL: response.data[key].tileURL, datatype: 'Line', tablename: response.data[key].tablename};
+                            $scope.layers.push($scope.layer);
+                        }
+                    }
+                }, function(response) {
+                    //Error
+                });
+                polygonLayerService.getPolyLayers().then(function(response){
+                    for(var key in response.data){
+                        if(response.data.hasOwnProperty(key)){
+                            console.log(key);
+                            $scope.layer = { 'name': response.data[key].name, dist: response.data[key].dist, tileURL: response.data[key].tileURL, datatype: 'Polygon', tablename: response.data[key].tablename};
+                            $scope.layers.push($scope.layer);
+                        }
+                    }
+                }, function(response){
+                    //Error
+                });
+                return $scope.layers;
+            }, 2000, $scope.loading = true);
+            $scope.loading = false;
+        };
 
         // **  Map
 
@@ -105,26 +149,31 @@ easygis.controller('menuController', ['$scope', 'polygonLayerService','$mdBottom
             });
         });
 
-        $scope.layer = null;
-        $scope.layers = null;
-        $scope.loadLayers = function() {
-            return  $scope.layers = PolygonLayer.getPolygonLayer();
-        };
-
         // -- CartoDB layer
         var cartodbLayer = [];
 
         $scope.getLayerInfo = function() {
-            var name;
-            console.log($scope.layer);
-            name = $scope.layer.name;
-            var layerData = getLayerData(name, 0, 0);
-            $scope.loadCartoDBLayer(layerData);
+            console.log(' getlayerinfo: ' + $scope.layer + ' = layer ');
+            var name = $scope.layer.name;
+            var layerData = null;
+            for(var i=0; i<$scope.layers.length; i++){
+                if($scope.layers[i].name === name){
+                    layerData = getLayerData($scope.layers[i].name, $scope.layers[i].dist, $scope.layers[i].tileURL,
+                    $scope.layers[i].tablename, $scope.layers[i].datatype, 'normal');
+                    break;
+                }
+            }
+            console.log(layerData + ' = layerdata ');
+            if(layerData) {
+                $scope.loadCartoDBLayer(layerData);
+            } else {
+                console.log('layerdata is null');
+            }
         };
 
         $scope.loadCartoDBLayer = function(layerData) {
             $scope.loading = true;
-            console.log(layerData.sublayers + ' layerdata');
+            console.log( 'loadCartoDBLayer: ' +layerData.sublayers + ' layerdata');
             leafletData.getMap().then(function(map) {
                 cartodb.Tiles.getTiles(layerData, function(tilesUrl, err) {
                     if (tilesUrl === null) {
@@ -138,17 +187,20 @@ easygis.controller('menuController', ['$scope', 'polygonLayerService','$mdBottom
                     cartodbLayer = L.tileLayer(tilesUrl.tiles[0]);
                     cartodbLayer.addTo(map);
                     $scope.loading = false;
+                    $scope.showSuccessWindow();
                 });
+
             });
         };
 
-        $scope.createBufferLayer = function(dist, layername) {
-            var layerData = getLayerData(layername, dist, 1);
-            console.log(layername);
-            $scope.loadBufferLayer(layerData, layername);
+        $scope.createBufferLayer = function(name, dist, tileURL, tablename) {
+            var datatype = 'Polygon';
+            console.log('createBufferLayer: name = ' + name + ' dist = ' +dist+ ' tileURL = ' + tileURL + ' tablename = ' + tablename);
+            var layerData = getLayerData(name, dist, tileURL, tablename, datatype, 'buffer');
+            $scope.loadBufferLayer(layerData, name, dist, tablename, datatype);
         };
 
-        $scope.loadBufferLayer = function(layerData, name) {
+        $scope.loadBufferLayer = function(layerData, name, dist, datatype, tablename) {
             $scope.loading = true;
             leafletData.getMap().then(function(map) {
                 cartodb.Tiles.getTiles(layerData, function(tilesUrl, err) {
@@ -156,59 +208,85 @@ easygis.controller('menuController', ['$scope', 'polygonLayerService','$mdBottom
                         console.log('error: ' + err.errors.join('/n'));
                         return;
                     }
-                    var buffname = name + ' as bufferlayer';
-                    console.log(L.tileLayer(tilesUrl.tiles[0])._url);
-                    polygonLayerService.addpolygonlayer(name, buffname, L.tileLayer(tilesUrl.tiles[0])._url)
+                    var buffname = ''+name+' buffer '+dist+' m';
+                    polygonLayerService.addpolygonlayer(buffname, dist, L.tileLayer(tilesUrl.tiles[0])._url, datatype, tablename)
                         .then(function(response) {
                             if(response.status === 200){
                                 console.log('bufferlayer ble lagt til');
                             }
+                        }, function () {
+                            console.log('adding failed');
+                            $scope.loading = false;
                         });
                     L.tileLayer(tilesUrl.tiles[0]).addTo(map);
                     $scope.loading = false;
+                    $scope.showSuccessWindow();
                 });
             });
         };
 
-        $scope.getBufferLayer = function(name) {
-
-        }
-
-
-        var getLayerData = function(name, dist, type) {
-            var table = null;
-            var cssCDB = null;
-            switch (name) {
-                case 'Pub':
-                    table = 'pub_norway';
-                    cssCDB = '#' + table + '{polygon-fill: #F11810; marker-fill: #229A00; }';
-                    break;
-                case 'Birkebeinerroute':
-                    table = 'birkebeinerloypen';
-                    cssCDB = '#' + table + '{line-color: #FF6600; polygon-fill: #A53ED5;}';
-                    break;
-                case 'Restaurants':
-                    table = 'restaurants_trondheim';
-                    cssCDB = '#' + table + '{marker-fill: #F11810; polygon-fill: #A53ED5;}';
-                    break;
-                case 'Innbyggertall':
-                    table = 'innbyggertall_postnr';
-                    cssCDB = '#' + table + '{marker-fill: #F11810; polygon-fill: #A53ED5;}';
-                    break;
-                case 'Trafikkmengde':
-                    table = 'trafikkmengde2015';
-                    cssCDB = '#' + table + '{line-color: #F11810; polygon-fill: #A53ED5;}';
-                    break;
+        // Add new layer inn database
+        $scope.addnewlayer = function(name, dist, tileurl, type, dbname) {
+            if(type === 'Polygon') {
+                $scope.loading = true;
+                polygonLayerService.addpolygonlayer(name, dist, tileurl, dbname).then(function(response){
+                    console.log('success, response: ' + JSON.stringify(response));
+                    $scope.loading = false;
+                    $scope.showSuccessWindow();
+                }, function () {
+                    console.log('adding failed');
+                    $scope.loading = false;
+                });
+            } else if(type === 'Point') {
+                $scope.loading = true;
+                pointLayerService.addPointLayer(name, tileurl, dbname).then(function(response){
+                    console.log('success, response: ' + JSON.stringify(response));
+                    $scope.loading = false;
+                    $scope.showSuccessWindow();
+                }, function () {
+                    console.log('adding failed');
+                    $scope.loading = false;
+                });
+            } else if(type === 'Line') {
+                $scope.loading = true;
+                lineLayerService.addLineLayer(name, tileurl, dbname).then(function(response){
+                    console.log('success, response: ' + JSON.stringify(response));
+                    $scope.loading = false;
+                    $scope.showSuccessWindow();
+                }, function () {
+                    console.log('adding failed');
+                    $scope.loading = false;
+                });
             }
+        };
+
+        //TEST Add new layer to MAP
+        $scope.testlayerAdd = function() {  // WORKS
+            var tilelayer;
+            polygonLayerService.getPolygonbyName('Pub').then(function(response){
+                tilelayer = {name: response.data.name, tileURL: response.data.tileURL};
+                console.log(tilelayer);
+                leafletData.getMap().then(function(map) {
+                    L.tileLayer(tilelayer.tileURL).addTo(map);
+                });
+
+            });
+        };
+
+        // Help functions
+        var getLayerData = function(name, dist, tileURL, tablename, datatype, sqltype) {
+            console.log(datatype + ' = datatype');
+            console.log(tablename + ' = tablename');
+            var cssCDB = getCSS(datatype, datatype);
             var sql = null;
 
-            if (type == 0) {
-                sql = getSQL_(table); //Returns the normal sql statement
-            } else if (type == 1) {
-                sql = getSQL_buffer(table, dist);
-                cssCDB = changeCSS_polygon(table);
+            if (sqltype === 'normal') {
+                sql = getSQL_(tablename); //Returns the normal sql statement
+            } else if (sqltype === 'buffer') {
+                sql = getSQL_buffer(tablename, dist);
             }
-            console.log(name + ' name');
+
+            console.log(sql + ' = sql ');
             var layerData = {
                 user_name: 'anneri',
                 sublayers: [{
@@ -217,7 +295,19 @@ easygis.controller('menuController', ['$scope', 'polygonLayerService','$mdBottom
                     cartocss: cssCDB
                 }]
             };
+            console.log('getLayerData: ' +layerData + ' = layerData');
             return layerData;
+        };
+        var getCSS = function(table, type){
+            var cartocss;
+            if(type === 'Point'){
+                cartocss = '#'+table+'{marker-fill-opacity:.9;marker-line-color:#FFF;marker-line-width:1;marker-line-opacity:1;marker-placement:point;marker-type:ellipse;marker-width:9;marker-fill:#B81609;marker-allow-overlap:true}';
+            }else if(type === 'Line'){
+                cartocss = '#'+table+'{line-color:#0F3B82;line-width:1.5;line-opacity:1}';
+            }else if(type === 'Polygon'){
+                cartocss = '#'+table+'{polygon-fill:#6B0FB2;polygon-opacity:.7;line-color:#FFF;line-width:.5;line-opacity:.7}';
+            }
+            return cartocss;
         };
         var getSQL_ = function(table) {
             var sql_cdb = 'SELECT * FROM ' + table;
@@ -236,6 +326,78 @@ easygis.controller('menuController', ['$scope', 'polygonLayerService','$mdBottom
 
         };
 
+
+        // ** Left menu, open new window:
+        $scope.showBufferWindow = function(ev) {
+            $mdDialog.show({
+                    controller: DialogControllerBuff,
+                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Buffer settings</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="layer" md-on-open=""> <md-option ng-value="layer" ng-repeat="layer in layers">{{layer.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary"> Execute buffer </md-button> </div></md-dialog>',
+                    targetEvent: ev,
+                    clickOutsideToClose: true
+                })
+                .then(function(answer) {
+                    $scope.createBufferLayer(answer[0], answer[1], answer[2], answer[3]);
+                }, function() {
+                    $scope.alert = 'You cancelled the dialog.';
+                });
+        };
+        $scope.showIntersectionWindow = function(ev) {
+            $mdDialog.show({
+                    controller: DialogController_int,
+                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"> <form name="intersect"> <h3>Intersection settings</h3> <div layout layout-sm="column"><br><md-select placeholder="Choose layer" ng-model="layer_1" md-on-open="" style="margin-right: 5%;"> <md-option ng-value="layer_1" ng-repeat="layer_1 in layers">{{layer_1.name}}</md-option> </md-select><md-select placeholder="Choose layer" ng-model="layer_2" md-on-open=""> <md-option ng-value="layer_2" ng-repeat="layer_2 in layers">{{layer_2.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Find intersection</md-button> </div></md-dialog>',
+                    targetEvent: ev,
+                    clickOutsideToClose: true
+                })
+                .then(function(answer) {
+                    console.log(answer[0] + ' 0 and 1 ' + answer[1]);
+                    $scope.alert = 'You said the information was "' + answer + '".';
+
+                }, function() {
+                    $scope.alert = 'You cancelled the dialog.';
+                });
+        };
+        $scope.showContainsWindow = function(ev) {
+            $mdDialog.show({
+                    controller: DialogController_cont,
+                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"> <form name="intersect"> <h3>Intersection settings</h3> <div layout layout-sm="column"><br><md-select placeholder="Choose layer" ng-model="layer_1" md-on-open="" style="margin-right: 5%;"> <md-option ng-value="layer_1" ng-repeat="layer_1 in layers">{{layer_1.name}}</md-option> </md-select><md-select placeholder="Choose layer" ng-model="layer_2" md-on-open=""> <md-option ng-value="layer_2" ng-repeat="layer_2 in layers">{{layer_2.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Find intersection</md-button> </div></md-dialog>',
+                    targetEvent: ev,
+                    clickOutsideToClose: true
+                })
+                .then(function(answer) {
+                    console.log(answer[0] + ' 0 and 1 ' + answer[1]);
+                    $scope.alert = 'You said the information was "' + answer + '".';
+
+                }, function() {
+                    $scope.alert = 'You cancelled the dialog.';
+                });
+        };
+        $scope.showAddNewLayerToDatabaseWindow = function(ev){
+            $mdDialog.show({
+                    controller: DialogController_addnewlayer,
+                    template: '<md-content class="md-no-momentum"><md-input-container md-no-float="" class="md-block"><input ng-model="polylayer.name" type="text" placeholder="Name of dataset"></md-input-container><md-input-container md-no-float="" class="md-block"><input ng-model="polylayer.tablename" type="text" placeholder="Tablename in CartoDB"></md-input-container><md-select placeholder="Choose layertype" ng-model="polylayer.type" md-on-open=""> <md-option ng-value="layer" ng-repeat="layer in layertypes">{{layer}}</md-option> </md-select><div></div><md-button ng-click="cancel()"> Cancel </md-button><md-button ng-click="answer(hei)" class="md-primary">Add to database</md-button></md-content>',
+                    targetEvent: ev,
+                    clickOutsideToClose: true
+                })
+                .then(function(answer) {
+                    console.log(answer[0] + answer[1] + answer[2]);
+                    $scope.addnewlayer(answer[0], 0, 'nothing', answer[1], answer[2]);
+                }, function() {
+                    $scope.alert = 'You cancelled the dialog.';
+                });
+        };
+        $scope.showSuccessWindow = function(ev) {
+            $mdDialog.show({
+                    controller: DialogController_success,
+                    template: '<md-button ng-click="answer(ok)" class="md-primary"><md-icon md-svg-src="action:ic_done_24px"></md-icon>Layer was added</md-button></md-content>',
+                    targetEvent: ev,
+                    clickOutsideToClose: true
+                })
+                .then(function(answer) {
+                    console.log('pushed ok');
+                }, function() {
+                    $scope.alert = 'You cancelled the dialog.';
+                });
+        };
 
         // Bottomsheet & Modal Dialogs
         $scope.alert = '';
@@ -263,52 +425,6 @@ easygis.controller('menuController', ['$scope', 'polygonLayerService','$mdBottom
                     $scope.alert = 'You cancelled the dialog.';
                 });
         };
-
-        $scope.showBufferWindow = function(ev) {
-            $mdDialog.show({
-                    controller: DialogControllerBuff,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"> <form name="buffer"><h3>Buffer settings</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="layer" md-on-open=""> <md-option ng-value="layer" ng-repeat="layer in layers">{{layer.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary"> Execute buffer </md-button> </div></md-dialog>',
-                    targetEvent: ev,
-                    clickOutsideToClose: true
-                })
-                .then(function(answer) {
-                    console.log(answer[0] + ' 0 and 1 ' + answer[1]);
-                    $scope.alert = 'You said the information was "' + answer + '".';
-                    $scope.createBufferLayer(answer[0], answer[1]);
-                }, function() {
-                    $scope.alert = 'You cancelled the dialog.';
-                });
-        }
-        $scope.showIntersectionWindow = function(ev) {
-            $mdDialog.show({
-                    controller: DialogController_int,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"> <form name="intersect"> <h3>Intersection settings</h3> <div layout layout-sm="column"><br><md-select placeholder="Choose layer" ng-model="layer_1" md-on-open="" style="margin-right: 5%;"> <md-option ng-value="layer_1" ng-repeat="layer_1 in layers">{{layer_1.name}}</md-option> </md-select><md-select placeholder="Choose layer" ng-model="layer_2" md-on-open=""> <md-option ng-value="layer_2" ng-repeat="layer_2 in layers">{{layer_2.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Find intersection</md-button> </div></md-dialog>',
-                    targetEvent: ev,
-                    clickOutsideToClose: true
-                })
-                .then(function(answer) {
-                    console.log(answer[0] + ' 0 and 1 ' + answer[1]);
-                    $scope.alert = 'You said the information was "' + answer + '".';
-
-                }, function() {
-                    $scope.alert = 'You cancelled the dialog.';
-                });
-        }
-        $scope.showContainsWindow = function(ev) {
-            $mdDialog.show({
-                    controller: DialogController_cont,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"> <form name="intersect"> <h3>Intersection settings</h3> <div layout layout-sm="column"><br><md-select placeholder="Choose layer" ng-model="layer_1" md-on-open="" style="margin-right: 5%;"> <md-option ng-value="layer_1" ng-repeat="layer_1 in layers">{{layer_1.name}}</md-option> </md-select><md-select placeholder="Choose layer" ng-model="layer_2" md-on-open=""> <md-option ng-value="layer_2" ng-repeat="layer_2 in layers">{{layer_2.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Find intersection</md-button> </div></md-dialog>',
-                    targetEvent: ev,
-                    clickOutsideToClose: true
-                })
-                .then(function(answer) {
-                    console.log(answer[0] + ' 0 and 1 ' + answer[1]);
-                    $scope.alert = 'You said the information was "' + answer + '".';
-
-                }, function() {
-                    $scope.alert = 'You cancelled the dialog.';
-                });
-        }
     }]);
 
 easygis.controller('ListBottomSheetCtrl', function($scope, $mdBottomSheet) {
@@ -325,59 +441,6 @@ easygis.controller('ListBottomSheetCtrl', function($scope, $mdBottomSheet) {
     };
 });
 
-function DialogControllerBuff($scope, $mdDialog) {
-    $scope.bufferdist = null;
-    $scope.layer = null;
-
-    $scope.hide = function() {
-        $mdDialog.hide();
-    };
-    $scope.cancel = function() {
-        $mdDialog.cancel();
-    };
-    $scope.answer = function(answer) {
-        var dist = $scope.bufferdist;
-        var layerName = $scope.layer.name;
-        var bufferInfo = [dist, layerName];
-        $mdDialog.hide(bufferInfo);
-    };
-    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
-}
-function DialogController_int($scope, $mdDialog, PolygonLayer) {
-    $scope.layer_1 = null;
-    $scope.layer_2 = null;
-
-    $scope.hide = function() {
-        $mdDialog.hide();
-    };
-    $scope.cancel = function() {
-        $mdDialog.cancel();
-    };
-    $scope.answer = function(answer) {
-        var layerName = $scope.layer.name;
-        var bufferInfo = [layerName];
-        $mdDialog.hide(bufferInfo);
-    };
-    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
-}
-function DialogController_cont($scope, $mdDialog) {
-    $scope.layer_polygon = null;
-    $scope.layer_points = null;
-
-    $scope.hide = function() {
-        $mdDialog.hide();
-    };
-    $scope.cancel = function() {
-        $mdDialog.cancel();
-    };
-    $scope.answer = function(answer) {
-        var dist = $scope.bufferdist;
-        var layerName = $scope.layer.name;
-        var bufferInfo = [dist, layerName];
-        $mdDialog.hide(bufferInfo);
-    };
-    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
-}
 
 
 

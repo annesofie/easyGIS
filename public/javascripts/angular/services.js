@@ -5,76 +5,82 @@
 
 easygis.factory('polygonLayerService', ['$http', function($http) {
 
-    function addpolygonlayer(name, buffname, tileurl){
-        return $http.post('layers/addpolygonlayer/', {name: name, name_buff: buffname, tileURL: tileurl});
+    function addpolygonlayer(name, dist, tileurl,  datatype, tablename){
+        return $http.post('layers/addpolygonlayer/', {name: name, dist: dist, tileURL: tileurl, datatype: datatype, tablename: tablename});
     }
-
     function getpolygonlayers(){
         return $http.get('layers/polygonlayer');
     }
-
-    function getpolygonlayer(id){
-        return $http.get('layers/polygonlayer/:id');
+    function getpolygonlayerId(id){
+        return $http.get('layers/polygonlayer/'+id);
+    }
+    function getpolygonlayerName(name){
+        return $http.get('layers/polygonlayer/one/'+name);
+    }
+    function deletepolygonlayerId(id){
+        return $http.delete('layers/polygonlayer/'+id);
     }
 
     return ({
         addpolygonlayer: addpolygonlayer,
         getPolyLayers: getpolygonlayers,
-        getPolygon: getpolygonlayer
+        getPolygonbyId: getpolygonlayerId,
+        getPolygonbyName: getpolygonlayerName,
+        deletePolygonbyId: deletepolygonlayerId
     });
 }]);
+easygis.factory('pointLayerService', ['$http', function($http) {
 
-easygis.factory('PointLayers', function(){
+    function addpointlayer(name, tileurl, tablename){
+        return $http.post('layers/addpointlayer/', {name: name, tileURL: tileurl, datatype: 'Point', tablename: tablename});
+    }
+    function getpointlayers(){
+        return $http.get('layers/pointlayer');
+    }
+    function getpointlayerId(id){
+        return $http.get('layers/pointlayer/'+id);
+    }
+    function getpointlayerName(name){
+        return $http.get('layers/pointlayer/one/'+name);
+    }
+    function deletepointlayerId(id){
+        return $http.delete('layers/pointlayer/'+id);
+    }
 
-    var layers = { layers: [
-        {id: 0, name: 'Pub', layer: 'empty'},
-        {id: 1, name: 'Birkebeinerroute', layer: 'empty'},
-        {id: 2, name: 'Restaurants', layer: 'empty'},
-        {id: 3, name: 'Innbyggertall', layer: 'empty'},
-        {id: 4, name: 'Trafikkmengde', layer: 'empty'}
-    ]};
+    return ({
+        addPointLayer: addpointlayer,
+        getPointLayers: getpointlayers,
+        getPointbyId: getpointlayerId,
+        getPointbyName: getpointlayerName,
+        deletePointbyId: deletepointlayerId
+    });
+}]);
+easygis.factory('lineLayerService', ['$http', function($http) {
 
-    return layers;
-});
+    function addlinelayer(name, tileurl, tablename){
+        return $http.post('layers/addlinelayer/', {name: name, tileURL: tileurl, datatype: 'Line', tablename: tablename});
+    }
+    function getlinelayers(){
+        return $http.get('layers/linelayer');
+    }
+    function getlinelayerId(id){
+        return $http.get('layers/linelayer/'+id);
+    }
+    function getlinelayerName(name){
+        return $http.get('layers/linelayer/one/'+name);
+    }
+    function deletelinelayerId(id){
+        return $http.delete('layers/linelayer/'+id);
+    }
 
-easygis.factory('PolygonLayer', function(){
-
-    var polylayer = { layers: [
-        {id: 0, name: 'Pub', layer: 'empty'},
-        {id: 1, name: 'Birkebeinerroute', layer: 'empty'},
-        {id: 2, name: 'Restaurants', layer: 'empty'},
-        {id: 3, name: 'Innbyggertall', layer: 'empty'},
-        {id: 4, name: 'Trafikkmengde', layer: 'empty'}
-    ]};
-
-
-    var addBuffLayer = function(id, name, newobj) { //Add new polygonlayer to the end
-        polylayer.layers.push(
-            {id: id, name: name, layer: newobj}
-        );
-    };
-    var removeBuffLayer = function(id) {
-        if(polylayer.id == id){
-            polylayer.layers.pop();
-        }
-    };
-    var getPolygonLayer = function(){
-        return polylayer.layers;
-    };
-    var getLayer = function(id){
-        if(polylayer.id == id){
-            return polylayer;
-        }
-    };
-
-    return {
-        addBuffLayer: addBuffLayer,
-        removeBuffLayer: removeBuffLayer,
-        getPolygonLayer: getPolygonLayer,
-        getlayer: getLayer
-    };
-});
-
+    return ({
+        addLineLayer: addlinelayer,
+        getLineLayers: getlinelayers,
+        getLinebyId: getlinelayerId,
+        getLinebyName: getlinelayerName,
+        deleteLinebyId: deletelinelayerId
+    });
+}]);
 
 /*easygis.factory('Upload', ['$q', function(){
     var reader = new FileReader();
