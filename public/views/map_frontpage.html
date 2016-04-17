@@ -11,13 +11,12 @@
         </md-toolbar>
         <md-list>
             <md-list-item class="md-2-line" role="link" md-ink-ripple>
-                <md-tooltip md-direction="right">Click here to add a new layer on the map</md-tooltip>
+                <md-tooltip md-direction="right">Click on a layer from the list to add it to the map</md-tooltip>
                 <md-icon md-svg-icon="maps:ic_layers_24px" aria-label="Add Polygon" flex="12"></md-icon>
                 <md-select placeholder="Choose a layer" name="layerChoice" ng-model="layer" md-on-open="loadLayers()" flex="60" md-on-close="getLayerInfo()">
                     <md-option ng-value="layer" ng-repeat="layer in layers">{{layer.name}}</md-option>
                 </md-select>
                 <div flex="15">
-
                 </div>
             </md-list-item>
             <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showBufferWindow()">
@@ -27,8 +26,8 @@
                     <span class="md-body-2">Create buffer</span>
                 </div>
             </md-list-item>
-            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="testlayerAdd()">
-                <md-tooltip md-direction="right">Click here to find interection between two layers</md-tooltip>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showIntersectionWindow()">
+                <md-tooltip md-direction="right">Click here to find interection between a town in Norway and a layer</md-tooltip>
                 <md-icon md-svg-icon="editor:ic_multiline_chart_24px" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
                     <span class="md-body-2">Find intersection</span>
@@ -43,7 +42,7 @@
             </md-list-item>
             <md-divider></md-divider>
             <md-subheader  class="md-no-sticky">Edit</md-subheader>
-            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="">
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="removeLayerWindow()">
                 <md-tooltip md-direction="right">Click here to remove a layer from the map</md-tooltip>
                 <md-icon md-svg-icon="action:ic_delete_24px" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
@@ -60,11 +59,11 @@
         </md-list>
     </md-sidenav>
     <div layout="column" class="relative" layout-fill role="main">
-        <md-button class="md-fab md-fab-bottom-right" aria-label="Add" ng-click="showAdd($event)">
-            <!-- ADD DATASETT -->
+        <!--<md-button class="md-fab md-fab-bottom-right" aria-label="Add" ng-click="showAdd($event)">
+            &lt;!&ndash; ADD DATASETT &ndash;&gt;
             <md-tooltip md-direction="top">Upload a new dataset</md-tooltip>
             <md-icon md-svg-icon="content:ic_add_24px" aria-label="Plus"></md-icon>
-        </md-button>
+        </md-button>-->
         <md-toolbar class="animate-show md-tall md-whiteframe-z1" ng-show="!showSearch">
             <div class="md-toolbar-tools">
                 <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-md aria-label="Menu">

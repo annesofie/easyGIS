@@ -5,8 +5,8 @@
 
 easygis.factory('polygonLayerService', ['$http', function($http) {
 
-    function addpolygonlayer(name, dist, tileurl,  datatype, tablename){
-        return $http.post('layers/addpolygonlayer/', {name: name, dist: dist, tileURL: tileurl, datatype: datatype, tablename: tablename});
+    function addpolygonlayer(name, dist, tileurl, tablename){
+        return $http.post('layers/addpolygonlayer/', {name: name, dist: dist, tileURL: tileurl, datatype: 'Polygon', tablename: tablename});
     }
     function getpolygonlayers(){
         return $http.get('layers/polygonlayer');
@@ -81,6 +81,42 @@ easygis.factory('lineLayerService', ['$http', function($http) {
         deleteLinebyId: deletelinelayerId
     });
 }]);
+easygis.factory('activeLayersService', function() {   //Keep track of active layers = layers on the map
+
+    var activeLayers = [];
+
+    function addLayer(name, tileurl) {
+        var newlayer = {name: name, tileurl: tileurl};
+        activeLayers.push(newlayer);
+        console.log(newlayer.name + newlayer.tileurl + ' was added to active layers');
+    }
+    function removeLayer(name) {
+        for (var i=0; i<activeLayers.length; i++){
+            if(activeLayers[i].name == name){
+                activeLayers.splice(i, 1);
+            }
+        }
+    }
+    function getAllLayers(){
+        return activeLayers;
+    }
+    function checkIfActiveLayer(name){
+        for (var i=0; i<activeLayers.length; i++) {
+            if (activeLayers[i].name === name){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return ({
+        addLayer: addLayer,
+        removeLayer: removeLayer,
+        getAllLayers: getAllLayers,
+        checkIfActiveLayer: checkIfActiveLayer
+    })
+
+});
 
 /*easygis.factory('Upload', ['$q', function(){
     var reader = new FileReader();

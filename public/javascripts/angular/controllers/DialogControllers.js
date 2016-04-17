@@ -20,32 +20,14 @@ function DialogControllerBuff($scope, $mdDialog, pointLayerService, lineLayerSer
         var bufferInfo = [layerName, dist, tileURL, tablename];
         $mdDialog.hide(bufferInfo);
     };
-    pointLayerService.getPointLayers().then(function (response) {
-        for(var key in response.data){
-            if(response.data.hasOwnProperty(key)){
-                console.log(key);
-                $scope.layer = { 'name': response.data[key].name, tileURL: response.data[key].tileURL, tablename: response.data[key].tablename};
-                $scope.layers.push($scope.layer);
-            }
-        }
-    }, function (response) {
-        //Error
-    });
-    lineLayerService.getLineLayers().then(function (response) {
-        for(var key in response.data){
-            if(response.data.hasOwnProperty(key)){
-                console.log(key);
-                $scope.layer = { 'name': response.data[key].name, tileURL: response.data[key].tileURL, tablename: response.data[key].tablename};
-                $scope.layers.push($scope.layer);
-            }
-        }
-    }, function(response) {
-        //Error
-    });
+    getPointLayers(pointLayerService, $scope.layer, $scope.layers);
+    getLineLayers(lineLayerService, $scope.layer, $scope.layers);
 }
-function DialogController_int($scope, $mdDialog, PolygonLayer) {
-    $scope.layer_1 = null;
-    $scope.layer_2 = null;
+function DialogController_int($scope, $mdDialog, pointLayerService, lineLayerService) {
+    $scope.name = null;
+    $scope.names = ['Trondheim', 'Bergen', 'Oslo', 'Molde', 'Kristiansand', 'Stavanger', 'Tromsø'];
+    $scope.layer = null;
+    $scope.layers = [];
 
     $scope.hide = function() {
         $mdDialog.hide();
@@ -55,10 +37,15 @@ function DialogController_int($scope, $mdDialog, PolygonLayer) {
     };
     $scope.answer = function(answer) {
         var layerName = $scope.layer.name;
-        var bufferInfo = [layerName];
-        $mdDialog.hide(bufferInfo);
+        var datatype = $scope.layer.datatype;
+        var tablename = $scope.layer.tablename;
+        var town = $scope.name;
+        var interInfo = [layerName, town, datatype, tablename];
+        console.log(interInfo + ' = intersection info from user');
+        $mdDialog.hide(interInfo);
     };
-    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
+    getPointLayers(pointLayerService, $scope.layer, $scope.layers);
+    getLineLayers(lineLayerService, $scope.layer, $scope.layers);
 }
 function DialogController_cont($scope, $mdDialog) {
     $scope.layer_polygon = null;
@@ -77,6 +64,24 @@ function DialogController_cont($scope, $mdDialog) {
         $mdDialog.hide(bufferInfo);
     };
     $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
+}
+function DialogController_removelayer($scope, $mdDialog, activeLayersService) {
+
+    $scope.activelayer = null;
+    $scope.activelayers = [];
+    $scope.hide = function() {
+        $mdDialog.hide();
+    };
+    $scope.cancel = function() {
+        $mdDialog.cancel();
+    };
+    $scope.answer = function(answer) {
+        var name = $scope.activelayer.name;
+        var tileurl = $scope.activelayer.tileurl;
+        var removelayer = [name, tileurl];
+        $mdDialog.hide(removelayer);
+    };
+    $scope.activelayers = activeLayersService.getAllLayers();
 }
 function DialogController_addnewlayer($scope, $mdDialog) {
     $scope.polylayer = {
@@ -110,5 +115,31 @@ function DialogController_success($scope, $mdDialog) {
     $scope.answer = function(answer) {
         $mdDialog.hide(answer);
     };
-    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
+}
+
+function getPointLayers(pointLayerService, layer, layers) {
+    pointLayerService.getPointLayers().then(function (response) {
+        for(var key in response.data){
+            if(response.data.hasOwnProperty(key)){
+                console.log(key);
+                layer = { 'name': response.data[key].name, tileURL: response.data[key].tileURL, datatype: response.data[key].datatype, tablename: response.data[key].tablename};
+                layers.push(layer);
+            }
+        }
+    }, function (response) {
+        //Error
+    });
+}
+function getLineLayers(lineLayerService, layer, layers){
+    lineLayerService.getLineLayers().then(function (response) {
+        for(var key in response.data){
+            if(response.data.hasOwnProperty(key)){
+                console.log(key);
+                layer = { 'name': response.data[key].name, tileURL: response.data[key].tileURL, datatype: response.data[key].datatype, tablename: response.data[key].tablename};
+                layers.push(layer);
+            }
+        }
+    }, function(response) {
+        //Error
+    });
 }
