@@ -25,7 +25,7 @@ easygis.controller('menuController', ['$scope', '$timeout','$mdBottomSheet','$md
         $scope.layers = [];
         $scope.loadLayers = function() {
 
-            if ($scope.layers.length < 1) {
+            //if ($scope.layers.length < 1) {
                 return $timeout(function () {
                     var lay = null;
                     var layMulti = [];
@@ -35,7 +35,7 @@ easygis.controller('menuController', ['$scope', '$timeout','$mdBottomSheet','$md
                     //console.log(layMulti);
                     //$scope.layers = $scope.layers || layMulti;
                 }, 500);
-            }
+            //}
         };
 
         // **  Map
