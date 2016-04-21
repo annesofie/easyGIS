@@ -24,14 +24,18 @@ easygis.controller('menuController', ['$scope', '$timeout','$mdBottomSheet','$md
         $scope.layer = null;
         $scope.layers = [];
         $scope.loadLayers = function() {
-            $scope.loading = true;
-            $timeout(function(){
-                getPointLayers(pointLayerService, $scope.layer, $scope.layers);
-                getLineLayers(lineLayerService, $scope.layer, $scope.layers);
-                getPolygonLayers(polygonLayerService, $scope.layer, $scope.layers);
-                $scope.loading = false;
-                return $scope.layers;
-            }, 500);
+
+            if ($scope.layers.length < 1) {
+                return $timeout(function () {
+                    var lay = null;
+                    var layMulti = [];
+                    getPointLayers(pointLayerService, $scope.layer, $scope.layers);
+                    getLineLayers(lineLayerService, $scope.layer, $scope.layers);
+                    getPolygonLayers(polygonLayerService, $scope.layer, $scope.layers);
+                    //console.log(layMulti);
+                    //$scope.layers = $scope.layers || layMulti;
+                }, 500);
+            }
         };
 
         // **  Map
@@ -123,9 +127,9 @@ easygis.controller('menuController', ['$scope', '$timeout','$mdBottomSheet','$md
         // -- CartoDB layer
         var cartodbLayer = [];
 
-        $scope.getLayerInfo = function() {
+        $scope.getLayerInfo = function(layer) {
             console.log(' getlayerinfo: ' + $scope.layer + ' = layer ');
-            var name = $scope.layer.name;
+            var name = layer.name;
             var layerData = null;
             var haveUrl = false;
             for(var i=0; i<$scope.layers.length; i++){
@@ -153,6 +157,7 @@ easygis.controller('menuController', ['$scope', '$timeout','$mdBottomSheet','$md
                 $scope.loading = false;
                 $scope.showLayerAlreadyInMapWindow();
             } else {
+
                 activeLayersService.addLayer(name, tileurl);
                 leafletData.getMap().then(function(map) {
                     L.tileLayer(tileurl).addTo(map);
@@ -177,9 +182,9 @@ easygis.controller('menuController', ['$scope', '$timeout','$mdBottomSheet','$md
                         $scope.showLayerAlreadyInMapWindow();
                     } else {
                         var layer = L.tileLayer(tilesUrl.tiles[0], {id: name});
-                        //console.log(JSON.stringify(tileurl2) + '  = layer2');
+                        console.log(JSON.stringify(layer) + '  = layer');
                         var tileurl = tilesUrl.tiles[0];
-                        console.log();
+                        console.log(tileurl + ' = tileurl');
                         activeLayersService.addLayer(name, tileurl);
                         leafletData.getMap().then(function(map) {
                             layer.addTo(map);
@@ -328,22 +333,22 @@ easygis.controller('menuController', ['$scope', '$timeout','$mdBottomSheet','$md
         var getCSS = function(table, type){
             var cartocss;
             if(type === 'Point'){
-                cartocss = '#'+table+'{marker-fill-opacity:.9;marker-line-color:#FFF;marker-line-width:1;marker-line-opacity:1;marker-placement:point;marker-type:ellipse;marker-width:9;marker-fill:#B81609;marker-allow-overlap:true}';
+                cartocss = '#'+table+'{marker-fill-opacity:.9;marker-line-color:#FFF;marker-line-width:0.2;marker-line-opacity:1;marker-placement:point;marker-type:ellipse;marker-width:9;marker-fill: #' + Math.floor(Math.random() * 16777215).toString(16)+' ;marker-allow-overlap:true}';
             }else if(type === 'Line'){
-                cartocss = '#'+table+'{line-color:#0F3B82;line-width:1.5;line-opacity:1}';
+                cartocss = '#'+table+'{line-color: #' + Math.floor(Math.random() * 16777215).toString(16)+';line-width:2;line-opacity:1}';
             }else if(type === 'Polygon'){
-                cartocss = '#'+table+'{polygon-fill:#6B0FB2;polygon-opacity:.7;line-color:#FFF;line-width:.5;line-opacity:.7}';
+                cartocss = '#'+table+'{polygon-fill: #' + Math.floor(Math.random() * 16777215).toString(16)+';polygon-opacity:.7;line-color:#FFF;line-width:.2;line-opacity:.7}';
             }
             return cartocss;
         };
         var changeCSS = function(table, type) {
             var cartocss;
             if(type === 'Point'){
-                cartocss = '#'+table+'{marker-fill-opacity:.9;marker-line-color:#FFF;marker-line-width:1;marker-line-opacity:1;marker-placement:point;marker-type:ellipse;marker-width:9;marker-fill:#33A02C;marker-allow-overlap:true}';
+                cartocss = '#'+table+'{marker-fill-opacity:.9;marker-line-color:#FFF;marker-line-width:0.2;marker-line-opacity:1;marker-placement:point;marker-type:ellipse;marker-width:9;marker-fill: #' + Math.floor(Math.random() * 16777215).toString(16)+';marker-allow-overlap:true}';
             }else if(type === 'Line'){
-                cartocss = '#'+table+'{line-color: #E31A1C;line-width:1.5;line-opacity:1}';
+                cartocss = '#'+table+'{line-color: #' + Math.floor(Math.random() * 16777215).toString(16)+';line-width:2;line-opacity:1}';
             }else if(type === 'Polygon'){
-                cartocss = '#'+table+'{polygon-fill:#0F3B82;polygon-opacity:.7;line-color:#FFF;line-width:.5;line-opacity:.7}';
+                cartocss = '#'+table+'{polygon-fill: #' + Math.floor(Math.random() * 16777215).toString(16)+';polygon-opacity:.7;line-color:#FFF;line-width:.2;line-opacity:.7}';
             }
             return cartocss;
         };

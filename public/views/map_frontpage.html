@@ -13,8 +13,8 @@
             <md-list-item class="md-2-line" role="link" md-ink-ripple>
                 <md-tooltip md-direction="right">Click on a layer from the list to add it to the map</md-tooltip>
                 <md-icon md-svg-icon="maps:ic_layers_24px" aria-label="Add Polygon" flex="12"></md-icon>
-                <md-select placeholder="Choose a layer" name="layerChoice" ng-model="layer" md-on-open="loadLayers()" flex="60" md-on-close="getLayerInfo()">
-                    <md-option ng-value="layer" ng-repeat="layer in layers">{{layer.name}}</md-option>
+                <md-select placeholder="Choose a layer" name="layerChoice" ng-model="layer" md-on-open="loadLayers()" flex="60" md-on-close="">
+                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers">{{layer.name}}</md-option>
                 </md-select>
                 <div flex="15">
                 </div>

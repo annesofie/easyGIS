@@ -32,7 +32,7 @@ router.get('/linelayer', function(req, res, next) {
 
 // ** Add a new layer
 router.post('/addpolygonlayer', function(req, res, next) {
-    polygonLayers.create(
+    polygonLayers.save(
         {
             'name': req.body.name,
             'dist': req.body.dist,
@@ -49,7 +49,7 @@ router.post('/addpolygonlayer', function(req, res, next) {
     })
 });
 router.post('/addpointlayer', function(req, res) {
-    pointLayers.create(
+    pointLayers.save(
         {
             'name': req.body.name,
             'tileURL': req.body.tileURL,
@@ -65,7 +65,7 @@ router.post('/addpointlayer', function(req, res) {
         })
 });
 router.post('/addlinelayer', function(req, res) {
-    lineLayers.create(
+    lineLayers.save(
         {
             'name': req.body.name,
             'tileURL': req.body.tileURL,
