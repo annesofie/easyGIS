@@ -85,10 +85,10 @@ easygis.factory('activeLayersService', function() {   //Keep track of active lay
 
     var activeLayers = [];
 
-    function addLayer(name, tileurl) {
-        var newlayer = {name: name, tileurl: tileurl};
+    function addLayer(newlayer) {
+        //var newlayer = {name: name, tileurl: tileurl};
         activeLayers.push(newlayer);
-        console.log(newlayer.name + newlayer.tileurl + ' was added to active layers');
+        console.log(JSON.stringify(newlayer) + ' was added to active layers');
     }
     function removeLayer(name) {
         for (var i=0; i<activeLayers.length; i++){
@@ -99,6 +99,13 @@ easygis.factory('activeLayersService', function() {   //Keep track of active lay
     }
     function getAllLayers(){
         return activeLayers;
+    }
+    function getLayerWithId(id) {
+        activeLayers.forEach(function(layer) {
+            if (layer.options.id === id){
+                return layer;
+            }
+        });
     }
     function checkIfActiveLayer(name){
         for (var i=0; i<activeLayers.length; i++) {
@@ -113,6 +120,7 @@ easygis.factory('activeLayersService', function() {   //Keep track of active lay
         addLayer: addLayer,
         removeLayer: removeLayer,
         getAllLayers: getAllLayers,
+        getLayerWithId: getLayerWithId,
         checkIfActiveLayer: checkIfActiveLayer
     })
 

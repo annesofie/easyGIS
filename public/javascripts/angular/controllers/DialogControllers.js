@@ -65,7 +65,7 @@ function DialogController_cont($scope, $mdDialog) {
     };
     $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
 }
-function DialogController_removelayer($scope, $mdDialog, activeLayersService) {
+function DialogController_removelayer($scope, $mdDialog, activeLayersService, layers) {
 
     $scope.activelayer = null;
     $scope.activelayers = [];
@@ -76,12 +76,9 @@ function DialogController_removelayer($scope, $mdDialog, activeLayersService) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        var name = $scope.activelayer.name;
-        var tileurl = $scope.activelayer.tileurl;
-        var removelayer = [name, tileurl];
-        $mdDialog.hide(removelayer);
+        $mdDialog.hide($scope.activelayer);
     };
-    $scope.activelayers = activeLayersService.getAllLayers();
+    $scope.activelayers = layers;
 }
 function DialogController_addnewlayer($scope, $mdDialog) {
     $scope.polylayer = {
