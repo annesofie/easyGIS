@@ -16,14 +16,36 @@
                 <md-select placeholder="Choose a layer" name="layerChoice" ng-model="layer" md-on-open="loadLayers()" flex="60" md-on-close="">
                     <i>Point layers</i>
                     <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.name}}</a></md-option>
+                    <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no point layers in the database!</i></p>
                     <i>Line layers</i>
                     <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.name}}</a></md-option>
+                    <p ng-show="(layers | filter:{datatype: 'Line'}).length == 0"><i>There are no line layers in the database!</i></p>
                     <i>Polygon layers</i>
                     <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.name}}</a></md-option>
+                    <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no polygon layers in the database!</i></p>
                 </md-select>
                 <div flex="15">
                 </div>
             </md-list-item>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple>
+                <md-tooltip md-direction="right">Click here to see active layers already added to the map</md-tooltip>
+                <md-icon md-svg-icon="maps:ic_layers_24px" aria-label="Add Polygon" flex="12"></md-icon>
+                <md-select placeholder="List of active layers" name="layerChoice" ng-model="cartodbLayer" md-on-open="" flex="60" md-on-close="">
+                    <i>Point layers</i>
+                    <md-option ng-value="cartodbLayer" ng-click="" ng-repeat="cartodbLayer in cartodbLayers | filter: {datatype: 'Point'}"><a>{{cartodbLayer.name}}</a></md-option>
+                    <p ng-show="(cartodbLayers | filter:{datatype: 'Point'}).length == 0"><i>There are no active point layers!</i></p>
+                    <i>Line layers</i>
+                    <md-option ng-value="cartodbLayer" ng-click="" ng-repeat="cartodbLayer in cartodbLayers | filter: {datatype: 'Line'}"><a>{{cartodbLayer.name}}</a></md-option>
+                    <p ng-show="(cartodbLayers | filter:{datatype: 'Line'}).length == 0"><i>There are no active line layers!</i></p>
+                    <i>Polygon layers</i>
+                    <md-option ng-value="cartodbLayer" ng-click="" ng-repeat="cartodbLayer in cartodbLayers | filter: {datatype: 'Polygon'}"><a>{{cartodbLayer.name}}</a></md-option>
+                    <p ng-show="(cartodbLayers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
+                </md-select>
+                <div flex="15">
+                </div>
+            </md-list-item>
+            <md-divider></md-divider>
+            <md-subheader  class="md-no-sticky">Operations</md-subheader>
             <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showBufferWindow()">
                 <md-tooltip md-direction="right">Click here to create buffer</md-tooltip>
                 <md-icon md-svg-icon="av:ic_album_24px" aria-label="Add Point" flex="12"></md-icon>
@@ -55,7 +77,7 @@
                 </div>
             </md-list-item>
             <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showAddNewLayerToDatabaseWindow()">
-                <md-tooltip md-direction="right">Click here to add a new Layer from cartoDB to the layer list</md-tooltip>
+                <md-tooltip md-direction="right">Click here to add a new Layer from cartoDB to the database</md-tooltip>
                 <md-icon md-svg-icon="action:ic_note_add_24px" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
                     <span class="md-body-2">Add new layer</span>

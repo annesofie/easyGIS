@@ -81,50 +81,17 @@ easygis.factory('lineLayerService', ['$http', function($http) {
         deleteLinebyId: deletelinelayerId
     });
 }]);
-easygis.factory('activeLayersService', function() {   //Keep track of active layers = layers on the map
 
-    var activeLayers = [];
+easygis.factory('geoJsonService', ['$http', function($http) {
 
-    function addLayer(newlayer) {
-        //var newlayer = {name: name, tileurl: tileurl};
-        activeLayers.push(newlayer);
-        console.log(JSON.stringify(newlayer) + ' was added to active layers');
-    }
-    function removeLayer(name) {
-        for (var i=0; i<activeLayers.length; i++){
-            if(activeLayers[i].name == name){
-                activeLayers.splice(i, 1);
-            }
-        }
-    }
-    function getAllLayers(){
-        return activeLayers;
-    }
-    function getLayerWithId(id) {
-        activeLayers.forEach(function(layer) {
-            if (layer.options.id === id){
-                return layer;
-            }
-        });
-    }
-    function checkIfActiveLayer(name){
-        for (var i=0; i<activeLayers.length; i++) {
-            if (activeLayers[i].name === name){
-                return true;
-            }
-        }
-        return false;
+    function getgeojson(URL){
+        return $http.get(URL);
     }
 
     return ({
-        addLayer: addLayer,
-        removeLayer: removeLayer,
-        getAllLayers: getAllLayers,
-        getLayerWithId: getLayerWithId,
-        checkIfActiveLayer: checkIfActiveLayer
+        getgeojson: getgeojson
     })
-
-});
+}]);
 
 /*easygis.factory('Upload', ['$q', function(){
     var reader = new FileReader();
