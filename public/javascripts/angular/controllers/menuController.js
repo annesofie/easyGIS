@@ -20,6 +20,11 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         //Loading icon show or not show
         $scope.loading = false;
 
+        // -------------------------  Map --------------------------
+
+        $scope.mapBoundsSouthWest = [];
+        $scope.mapBoundsNorthEast = [];
+
         // ** Get layers available in database
         $scope.layer = null;
         $scope.layers = [];
@@ -31,9 +36,8 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             }, 500);
         };
 
-        // **  Map
 
-        // -- Leaflet Draw
+        // ---- Leaflet Draw
         var drawnItems = new L.FeatureGroup();
         for (var i = 0; i < $scope.savedItems.length; i++) {
             L.geoJson($scope.savedItems[i].geoJSON, {
@@ -51,7 +55,10 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         angular.extend($scope, {
             center: {
                 autoDiscover: true,
-                zoom: 10
+                zoom: 12
+            },
+            defaults: {
+                scrollWheelZoom: true
             },
             controls: {
                 draw: {
@@ -65,6 +72,17 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         });
 
         leafletData.getMap().then(function (map) {
+            $scope.mapBoundsNorthEast = {
+                lat: map.getBounds()._northEast.lat,
+                long: map.getBounds()._northEast.lng
+            };
+            $scope.mapBoundsSouthWest = {
+                lat: map.getBounds()._southWest.lat,
+                long: map.getBounds()._southWest.lng
+            };
+            console.log($scope.mapBoundsNorthEast);
+            console.log($scope.mapBoundsSouthWest);
+
             var drawnItems = $scope.controls.draw.edit.featureGroup;
             console.log(drawnItems + ' drawnItems ');
 
@@ -118,77 +136,58 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             });
         });
 
-        // -- CartoDB layers active on the map
+        // ----- CartoDB layers active on the map
         $scope.cartodbLayer = null;
-        $scope.cartodbLayers = [];
+        $scope.cartodbLayers = []; //Layers on the map
 
         $scope.getLayerInfo = function (layer) {
-            console.log(' getlayerinfo: ' + $scope.layer + ' = layer ');
+            console.log(' getlayerinfo: ' + layer + ' = layer ');
             var name = layer.name;
-            var layerData = null;
-            var haveUrl = false;
-            for (var i = 0; i < $scope.layers.length; i++) {
-                if ($scope.layers[i].name === name) {
-                    if ($scope.layers[i].tileURL !== 'nothing') {
-                        $scope.addTileURL($scope.layers[i].tileURL, name);
-                        haveUrl = true;
-                        break;
-                    } else {
-                        layerData = getLayerData($scope.layers[i].name, $scope.layers[i].dist, null, $scope.layers[i].tileURL,
-                            $scope.layers[i].datatype, $scope.layers[i].tablename, 'normal');
-                        break;
-                    }
-                }
-            }
-            if (!haveUrl && layerData) {
-                $scope.loadCartoDBLayer(layerData, name);
-            } else {
-                console.log('Added with url: ' + haveUrl + ', layerdata is null');
-            }
-        };
-        $scope.addTileURL = function (tileurl, name) {
-            if (activeLayersService.checkIfActiveLayer(name)) {
-                //Layer already in active layers
-                $scope.loading = false;
-                $scope.showLayerAlreadyInMapWindow();
-            } else {
-
-                activeLayersService.addLayer(name, tileurl);
-                leafletData.getMap().then(function (map) {
-                    L.tileLayer(tileurl).addTo(map);
-                });
-                $scope.loading = false;
-                $scope.showSuccessWindow();
-            }
+            var layerData;
+            layerData = getLayerData(layer.name, layer.dist, null, layer.tileURL,
+                layer.datatype, layer.tablename, 'normal');
+            $scope.loadCartoDBLayer(layerData, name, layer.datatype);
         };
 
-        function addLayer(show) {
-            return function (layer) {
-                if (!show) {
-                    layer.hide();
-                }
-                cartodbLayers[id] = layer;
+        $scope.loadCartoDBLayer = function (layerData, name, datatype) {
+
+            var geojsonMarkerOptions = {
+                radius: 4,
+                fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
+                color: "#000",
+                weight: 1,
+                opacity: 0.5,
+                fillOpacity: 0.8
             };
-        }
-        $scope.loadCartoDBLayer = function (layerData, name) {
 
             leafletData.getMap().then(function (map) {
                 $scope.loading = true;
-                geoJsonService.getgeojson('https://anneri.cartodb.com/api/v2/sql?format=GeoJSON&q=SELECT * FROM pub_norway ')
+                geoJsonService.getgeojson('https://anneri.cartodb.com/api/v2/sql?format=GeoJSON&q='+layerData.sublayers[0].sql+' ')
                     .then(function successCallback(response) {
-                        // this callback will be called asynchronously
-                        // when the response is available
-                        console.log(response);
+                        // this callback will be called asynchronously, when the response is available
+                        //console.log(response);
                         var features = response.data.features;
-                        console.log(features);
+
                         var geolay = L.geoJson(features, {
-                            style: {
-                                "opacity": 1,
-                                "color": '#' + Math.floor(Math.random() * 16777215).toString(16)
+                            pointToLayer: function (feature, latlng) {
+                                return L.circleMarker(latlng, geojsonMarkerOptions);
+                            },
+                            onEachFeature: function(feature, lay){
+                                if(feature.properties == null) {
+                                    feature.properties = {};
+                                }
+                                feature.properties.parentLayer = lay._id;
+                                feature.properties.isSelected = false;
+                                feature.properties.layName = name;
+                                feature.properties.datatype = datatype;
+                                lay.bindPopup(feature.properties.layName);
                             }
                         });
-                        //geolay.on('click', highlightFeature);
+                        geolay.on('click', highlightFeature);
                         geolay.addTo(map);
+                        console.log(geolay);
+                        $scope.cartodbLayers.push(geolay);
+
 
                         //Stop loading icon, show success window
                         $scope.loading = false;
@@ -202,32 +201,51 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
                     });
             });
-
-
-                /*cartodb.Tiles.getTiles(layerData, function (tilesUrl, err) {
-                    if (tilesUrl === null) {
-                        console.log(tilesUrl);
-                        console.log('error: ' + err.errors.join('/n'));
-                        return;
-                    }
-                    if ($scope.cartodbLayers.indexOf() > 0) {  //Check if layer already in the map
-                        $scope.loading = false;
-                        $scope.showLayerAlreadyInMapWindow();
-                    } else {
-                        console.log(JSON.stringify(tilesUrl) + ' = tilesURL');
-                        var newLayer = L.tileLayer(tilesUrl.tiles[0], {id: name});
-                        console.log(JSON.stringify(newLayer) + ' new layer');
-                        $scope.cartodbLayers.push(newLayer);
-                        newLayer.addTo(map);  //Add to map
-
-                        //Stop loading icon, show success window
-                        $scope.loading = false;
-                        $scope.showSuccessWindow();
-                    }
-
-                });*/
-
         };
+
+        function onEachFeature(feature, layer){
+            if (feature.properties && feature.properties.name) {
+                layer.bindPopup(feature.properties.name);
+            }
+        }
+
+        $scope.selectedFeature = null;
+        $scope.featureList = [];
+        function highlightFeature(e) {
+            var layer = e.layer;
+            console.log(layer);
+            if (layer.feature.properties.isSelected) {
+                $scope.selectedFeature = null;
+                layer.feature.properties.isSelected = false;
+            }
+            var index = $scope.featureList.indexOf(layer);
+            if (index >= 0) {
+                $scope.featureList.splice(index, 1);
+                layer.setStyle({
+                    "opacity": 1
+                });
+                return;
+            } else {
+                $scope.featureList.push(layer);
+                layer.setStyle({
+                    "opacity": 0.5
+                });
+                return;
+            }
+
+            if (!L.Browser.ie && !L.Browser.opera) {
+                layer.bringToFront();
+            }
+            $scope.selectedFeature = layer;
+            layer.feature.properties.isSelected = true;
+            console.log($scope.featureList + " = featurelist");
+            console.log(layer + ' = layer in highlightlayer');
+            layer.setStyle({
+                "opacity": 0.5
+            });
+
+
+        }
 
         $scope.createBufferLayer = function (name, dist, tileURL, tablename) {
             var datatype = 'Polygon';
@@ -397,7 +415,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             return cartocss;
         };
         var getSQL_ = function (table) {
-            var sql_cdb = 'SELECT * FROM ' + table;
+            var sql_cdb = 'SELECT '+table+'.cartodb_id, '+table+'.the_geom, '+table+'.the_geom_webmercator FROM '+table; //+' WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point('+$scope.mapBoundsNorthEast.lat+','+$scope.mapBoundsNorthEast.long+'),ST_Point('+$scope.mapBoundsSouthWest.lat+','+$scope.mapBoundsSouthWest.long+')),4326)';
             return sql_cdb;
         };
         var getSQL_buffer = function (table, dist) {
@@ -579,7 +597,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.removeLayerWindow = function (ev) {
             $mdDialog.show({
                     controller: DialogController_removelayer,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Remove layer from map</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="activelayer" md-on-open=""> <md-option ng-value="activelayer" ng-repeat="activelayer in activelayers">{{activelayer.options.id}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"><div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Remove Layer</md-button> </div></md-dialog>',
+                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Remove layer from map</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="activelayer" md-on-open=""> <md-option ng-value="activelayer" ng-repeat="activelayer in activelayers">{{activelayer._layers.feature.properties.layName}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"><div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Remove Layer</md-button> </div></md-dialog>',
                     targetEvent: ev,
                     clickOutsideToClose: true,
                     locals: {

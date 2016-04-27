@@ -32,13 +32,13 @@
                 <md-icon md-svg-icon="maps:ic_layers_24px" aria-label="Add Polygon" flex="12"></md-icon>
                 <md-select placeholder="List of active layers" name="layerChoice" ng-model="cartodbLayer" md-on-open="" flex="60" md-on-close="">
                     <i>Point layers</i>
-                    <md-option ng-value="cartodbLayer" ng-click="" ng-repeat="cartodbLayer in cartodbLayers | filter: {datatype: 'Point'}"><a>{{cartodbLayer.name}}</a></md-option>
+                    <md-option ng-value="cartodbLayer" ng-click="" ng-repeat="cartodbLayer in cartodbLayers | filter: {datatype: 'Point'}"><a>{{cartodbLayer.layName}}</a></md-option>
                     <p ng-show="(cartodbLayers | filter:{datatype: 'Point'}).length == 0"><i>There are no active point layers!</i></p>
                     <i>Line layers</i>
-                    <md-option ng-value="cartodbLayer" ng-click="" ng-repeat="cartodbLayer in cartodbLayers | filter: {datatype: 'Line'}"><a>{{cartodbLayer.name}}</a></md-option>
+                    <md-option ng-value="cartodbLayer" ng-click="" ng-repeat="cartodbLayer in cartodbLayers | filter: {datatype: 'Line'}"><a>{{cartodbLayer.layName}}</a></md-option>
                     <p ng-show="(cartodbLayers | filter:{datatype: 'Line'}).length == 0"><i>There are no active line layers!</i></p>
                     <i>Polygon layers</i>
-                    <md-option ng-value="cartodbLayer" ng-click="" ng-repeat="cartodbLayer in cartodbLayers | filter: {datatype: 'Polygon'}"><a>{{cartodbLayer.name}}</a></md-option>
+                    <md-option ng-value="cartodbLayer" ng-click="" ng-repeat="cartodbLayer in cartodbLayers | filter: {datatype: 'Polygon'}"><a>{{cartodbLayer.layName}}</a></md-option>
                     <p ng-show="(cartodbLayers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
                 </md-select>
                 <div flex="15">
