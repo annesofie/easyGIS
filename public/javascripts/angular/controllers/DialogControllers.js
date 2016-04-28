@@ -2,7 +2,7 @@
  * Created by AnneSofie on 10.04.2016.
  */
 
-function DialogControllerBuff($scope, $mdDialog, pointLayerService, lineLayerService) {
+function DialogControllerBuff($scope, $mdDialog, $timeout, pointLayerService, lineLayerService, polygonLayerService) {
     $scope.bufferdist = null;
     $scope.layer = null;
     $scope.layers = [];
@@ -20,9 +20,10 @@ function DialogControllerBuff($scope, $mdDialog, pointLayerService, lineLayerSer
         var bufferInfo = [layerName, dist, tileURL, tablename];
         $mdDialog.hide(bufferInfo);
     };
-    getPointLayers(pointLayerService, $scope.layer, $scope.layers);
-    getLineLayers(lineLayerService, $scope.layer, $scope.layers);
-    getPolygonLayers(polygonLayerService, $scope.layer, $scope.layers);
+
+        getPointLayers(pointLayerService, $scope.layer, $scope.layers);
+        getLineLayers(lineLayerService, $scope.layer, $scope.layers);
+        getPolygonLayers(polygonLayerService, $scope.layer, $scope.layers);
 }
 function DialogController_int($scope, $mdDialog, pointLayerService, lineLayerService, polygonLayerService) {
     $scope.name = null;
@@ -167,7 +168,7 @@ function getPolygonLayers(polygonLayerService, layer, layers) {
                     datatype: 'Polygon',
                     tablename: response.data[key].tablename
                 };
-                console.log(JSON.stringify(layer) + ' = layer in getPolygonlayer in intersection');
+                //console.log(JSON.stringify(layer) + ' = layer in getPolygonlayer in intersection');
                 layers.push(layer);
             }
         }

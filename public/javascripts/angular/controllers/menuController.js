@@ -14,11 +14,10 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             $mdSidenav(menuId).toggle();
         };
 
-        $scope.addtype = '';
-        $scope.savedItems = [];
-
         //Loading icon show or not show
         $scope.loading = false;
+
+        $scope.savedItems = [];
 
         // -------------------------  Map --------------------------
 
@@ -162,7 +161,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
             leafletData.getMap().then(function (map) {
                 $scope.loading = true;
-                geoJsonService.getgeojson('https://anneri.cartodb.com/api/v2/sql?format=GeoJSON&q='+layerData.sublayers[0].sql+' ')
+                geoJsonService.getgeojson('https://anneri.cartodb.com/api/v2/sql?format=GeoJSON&q='+layerData.sublayers[0].sql)
                     .then(function successCallback(response) {
                         // this callback will be called asynchronously, when the response is available
                         //console.log(response);
@@ -173,9 +172,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                                 return L.circleMarker(latlng, geojsonMarkerOptions);
                             },
                             onEachFeature: function(feature, lay){
-                                if(feature.properties == null) {
-                                    feature.properties = {};
-                                }
                                 feature.properties.parentLayer = lay._id;
                                 feature.properties.isSelected = false;
                                 feature.properties.layName = name;
@@ -214,21 +210,18 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         function highlightFeature(e) {
             var layer = e.layer;
             console.log(layer);
-            if (layer.feature.properties.isSelected) {
-                $scope.selectedFeature = null;
-                layer.feature.properties.isSelected = false;
-            }
             var index = $scope.featureList.indexOf(layer);
             if (index >= 0) {
                 $scope.featureList.splice(index, 1);
                 layer.setStyle({
-                    "opacity": 1
+                    "opacity": 0.5
+
                 });
                 return;
             } else {
                 $scope.featureList.push(layer);
                 layer.setStyle({
-                    "opacity": 0.5
+                    "opacity": 1
                 });
                 return;
             }
@@ -236,29 +229,77 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             if (!L.Browser.ie && !L.Browser.opera) {
                 layer.bringToFront();
             }
-            $scope.selectedFeature = layer;
-            layer.feature.properties.isSelected = true;
-            console.log($scope.featureList + " = featurelist");
-            console.log(layer + ' = layer in highlightlayer');
-            layer.setStyle({
-                "opacity": 0.5
-            });
-
-
         }
 
         $scope.createBufferLayer = function (name, dist, tileURL, tablename) {
             var datatype = 'Polygon';
             console.log('createBufferLayer: name = ' + name + ' dist = ' + dist + ' tileURL = ' + tileURL + ' tablename = ' + tablename);
             var layerData = getLayerData(name, dist, null, tileURL, datatype, tablename, 'buffer');
-            $scope.loadBufferLayer(layerData, name, dist, tablename);
+
+            $scope.loadBufferLayer(layerData, name, dist, datatype);
         };
 
 
-        $scope.loadBufferLayer = function (layerData, name, dist, tablename) {
+        $scope.loadBufferLayer = function (layerData, name, dist, datatype) {
             $scope.loading = true;
+            var geojsonMarkerOptions = {
+                radius: dist/2,
+                fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
+                color: "#000",
+                weight: 1,
+                opacity: 0.5,
+                fillOpacity: 0.8
+            };
             leafletData.getMap().then(function (map) {
-                cartodb.Tiles.getTiles(layerData, function (tilesUrl, err) {
+
+                $scope.loading = true;
+
+                geoJsonService.getgeojson('https://anneri.cartodb.com/api/v2/sql?format=GeoJSON&q='+layerData.sublayers[0].sql)
+                    .then(function successCallback(response) {
+                        // this callback will be called asynchronously, when the response is available
+                        //console.log(response);
+                        var features = response.data.features;
+                        var buffname = '' + name + ' buffer ' + dist + ' m'; // Name for the new buffer layer
+                        var geolay = L.geoJson(features, {
+                            style: {
+                                "opacity": 1,
+                                "color": '#' + Math.floor(Math.random() * 16777215).toString(16)
+                            },
+                            pointToLayer: function (feature, latlng) {
+                                return L.circleMarker(latlng, geojsonMarkerOptions);
+                            },
+                            onEachFeature: function(feature, lay){
+                                if(feature.properties == null) {
+                                    feature.properties = {};
+                                }
+                                feature.properties.parentLayer = lay._id;
+                                feature.properties.isSelected = false;
+                                feature.properties.layName = buffname;
+                                feature.properties.datatype = datatype;
+                                lay.bindPopup(feature.properties.layName);
+                            }
+                        });
+                        geolay.on('click', highlightFeature);
+
+                        geolay.addTo(map);
+                        console.log(geolay);
+                        $scope.cartodbLayers.push(geolay);
+
+
+                        //Stop loading icon, show success window
+                        $scope.loading = false;
+                        $scope.showSuccessWindow();
+
+                    }, function errorCallback(response) {
+                        // called asynchronously if an error occurs
+                        // or server returns response with an error status.
+                        console.log('failed to load geojson');
+                        $scope.loading = false;
+
+                    });
+
+
+                /*cartodb.Tiles.getTiles(layerData, function (tilesUrl, err) {
                     if (tilesUrl === null) {
                         console.log('error: ' + err.errors.join('/n'));
                         $scope.loading = false;
@@ -274,7 +315,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                         $scope.loading = false;
                         $scope.showSuccessWindow();
                     }
-                });
+                });*/
             });
         };
         $scope.createIntersectionLayer = function (name, datatype, tablename, param, intername, dist, sqltype) {
@@ -286,7 +327,10 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             console.log(datatype + ' = datatype');
             $scope.loading = true;
             leafletData.getMap().then(function (map) {
-                cartodb.Tiles.getTiles(layerData, function (tilesUrl, err) {
+
+
+
+                /*cartodb.Tiles.getTiles(layerData, function (tilesUrl, err) {
                     if (tilesUrl === null) {
                         console.log('error: ' + err.errors.join('/n'));
                         $scope.loading = false;
@@ -303,7 +347,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                         $scope.loading = false;
                         $scope.showSuccessWindow();
                     }
-                });
+                });*/
             });
         };
 
@@ -419,8 +463,8 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             return sql_cdb;
         };
         var getSQL_buffer = function (table, dist) {
-            var sql_cdb = 'SELECT ST_Transform(ST_Buffer(the_geom::geography, ' +
-                dist + ')::geometry, 3857) as the_geom_webmercator, cartodb_id FROM ' + table;
+            var sql_cdb = 'SELECT ST_Transform(ST_Buffer(the_geom::geography,'+
+                dist+')::geometry, 3857) as the_geom_webmercator,cartodb_id,the_geom FROM ' + table;
             return sql_cdb;
         };
         var getSQL_intersection_within_city = function (table, town) {
@@ -597,7 +641,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.removeLayerWindow = function (ev) {
             $mdDialog.show({
                     controller: DialogController_removelayer,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Remove layer from map</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="activelayer" md-on-open=""> <md-option ng-value="activelayer" ng-repeat="activelayer in activelayers">{{activelayer._layers.feature.properties.layName}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"><div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Remove Layer</md-button> </div></md-dialog>',
+                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Remove layer from map</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="activelayer" md-on-open=""> <md-option ng-value="activelayer" ng-repeat="activelayer in activelayers">{{activelayer._layers[76].feature.properties.layName}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"><div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Remove Layer</md-button> </div></md-dialog>',
                     targetEvent: ev,
                     clickOutsideToClose: true,
                     locals: {
