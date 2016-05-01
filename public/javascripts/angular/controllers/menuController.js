@@ -2,8 +2,8 @@
  * Created by AnneSofie on 14.02.2016.
  */
 
-easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'polygonLayerService', 'pointLayerService', 'lineLayerService', 'geoJsonService',
-    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData, polygonLayerService, pointLayerService, lineLayerService, geoJsonService) {
+easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'polygonLayerService', 'pointLayerService', 'lineLayerService', 'geoJsonService', 'layerService',
+    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData, polygonLayerService, pointLayerService, lineLayerService, geoJsonService, layerService) {
 
         // Toolbar search toggle
         $scope.toggleSearch = function (element) {
@@ -29,11 +29,11 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.layers = [];
         $scope.loadLayers = function () {
             return $timeout(function () {
-                getPointLayers(pointLayerService, $scope.layers);
-                getLineLayers(lineLayerService, $scope.layers);
-                getPolygonLayers(polygonLayerService, $scope.layers);
+                $scope.layers = [{name:'Restaurant', dbname: 'restaurant', datatype: 'Point'}, {name:'Pub', dbname: 'pub', datatype: 'Point'},
+                    {name: 'Kommuner', dbname: 'kommune', datatype: 'Polygon'}, {name: 'Trafikkmengde', dbname: 'trafikkmengde', datatype: 'Line'}];
             }, 500);
         };
+
 
 
         // ---- Leaflet Draw
@@ -141,14 +141,14 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
         $scope.getLayerInfo = function (layer) {
             console.log(' getlayerinfo: ' + layer + ' = layer ');
-            var name = layer.name;
-            var layerData;
+            var dbname = layer.dbname;
+            /*var layerData;
             layerData = getLayerData(layer.name, layer.dist, null, layer.tileURL,
-                layer.datatype, layer.tablename, 'normal');
-            $scope.loadCartoDBLayer(layerData, name, layer.datatype);
+                layer.datatype, layer.tablename, 'normal');*/
+            $scope.loadCartoDBLayer(dbname, layer.datatype);
         };
 
-        $scope.loadCartoDBLayer = function (layerData, name, datatype) {
+        $scope.loadCartoDBLayer = function (dbname, datatype) {
 
             var geojsonMarkerOptions = {
                 radius: 4,
@@ -161,22 +161,27 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
             leafletData.getMap().then(function (map) {
                 $scope.loading = true;
-                geoJsonService.getgeojson('https://anneri.cartodb.com/api/v2/sql?format=GeoJSON&q='+layerData.sublayers[0].sql)
-                    .then(function successCallback(response) {
-                        // this callback will be called asynchronously, when the response is available
-                        //console.log(response);
-                        var features = response.data.features;
+
+                layerService.getLayer('/api/layer/'+dbname)
+                    .success(function(data) {
+                        //$scope.todoData = data;
+                        console.log(data);
+                        var features = data[0].row_to_json.features;
 
                         var geolay = L.geoJson(features, {
                             pointToLayer: function (feature, latlng) {
                                 return L.circleMarker(latlng, geojsonMarkerOptions);
                             },
                             onEachFeature: function(feature, lay){
-                                feature.properties.parentLayer = lay._id;
-                                feature.properties.isSelected = false;
-                                feature.properties.layName = name;
                                 feature.properties.datatype = datatype;
-                                lay.bindPopup(feature.properties.layName);
+
+                                if(feature.properties.komm_navn){
+                                    lay.bindPopup(feature.properties.komm_navn);
+                                } else if (feature.properties.vei_navn){
+                                    lay.bindPopup(feature.properties.vei_navn);
+                                } else if (feature.properties.db_name){
+                                    lay.bindPopup(feature.properties.db_name);
+                                }
                             }
                         });
                         geolay.on('click', highlightFeature);
@@ -184,26 +189,16 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                         console.log(geolay);
                         $scope.cartodbLayers.push(geolay);
 
-
                         //Stop loading icon, show success window
                         $scope.loading = false;
                         $scope.showSuccessWindow();
 
-                    }, function errorCallback(response) {
-                        // called asynchronously if an error occurs
-                        // or server returns response with an error status.
-                        console.log('failed to load geojson');
-                        $scope.loading = false;
-
+                    })
+                    .error(function(error) {
+                        console.log('Error: ' + error);
                     });
             });
         };
-
-        function onEachFeature(feature, layer){
-            if (feature.properties && feature.properties.name) {
-                layer.bindPopup(feature.properties.name);
-            }
-        }
 
         $scope.selectedFeature = null;
         $scope.featureList = [];
@@ -231,19 +226,11 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             }
         }
 
-        $scope.createBufferLayer = function (name, dist, tileURL, tablename) {
-            var datatype = 'Polygon';
-            console.log('createBufferLayer: name = ' + name + ' dist = ' + dist + ' tileURL = ' + tileURL + ' tablename = ' + tablename);
-            var layerData = getLayerData(name, dist, null, tileURL, datatype, tablename, 'buffer');
-
-            $scope.loadBufferLayer(layerData, name, dist, datatype);
-        };
-
-
-        $scope.loadBufferLayer = function (layerData, name, dist, datatype) {
+        $scope.loadBufferLayer = function (layer) {
+            console.log(layer);
             $scope.loading = true;
             var geojsonMarkerOptions = {
-                radius: dist/2,
+                //radius: dist/2,
                 fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
                 color: "#000",
                 weight: 1,
@@ -252,52 +239,44 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             };
             leafletData.getMap().then(function (map) {
 
-                $scope.loading = true;
+                //$scope.loading = true;
 
-                geoJsonService.getgeojson('https://anneri.cartodb.com/api/v2/sql?format=GeoJSON&q='+layerData.sublayers[0].sql)
-                    .then(function successCallback(response) {
-                        // this callback will be called asynchronously, when the response is available
-                        //console.log(response);
-                        var features = response.data.features;
-                        var buffname = '' + name + ' buffer ' + dist + ' m'; // Name for the new buffer layer
-                        var geolay = L.geoJson(features, {
-                            style: {
-                                "opacity": 1,
-                                "color": '#' + Math.floor(Math.random() * 16777215).toString(16)
-                            },
+                var newlayer = {newname: layer.newname, dbname: layer.dbname, buffdist: layer.buffdist, newdbname: layer.newdbname};
+                layerService.postLayer('/api/layer', newlayer)
+                    .success(function(data) {
+                        //$scope.todoData = data;
+                        console.log(data);
+                        var features = data[0].row_to_json.features;
+
+                        /*var geolay = L.geoJson(features, {
                             pointToLayer: function (feature, latlng) {
                                 return L.circleMarker(latlng, geojsonMarkerOptions);
                             },
                             onEachFeature: function(feature, lay){
-                                if(feature.properties == null) {
-                                    feature.properties = {};
-                                }
-                                feature.properties.parentLayer = lay._id;
-                                feature.properties.isSelected = false;
-                                feature.properties.layName = buffname;
                                 feature.properties.datatype = datatype;
-                                lay.bindPopup(feature.properties.layName);
+
+                                if(feature.properties.komm_navn){
+                                    lay.bindPopup(feature.properties.komm_navn);
+                                } else if (feature.properties.vei_navn){
+                                    lay.bindPopup(feature.properties.vei_navn);
+                                } else if (feature.properties.db_name){
+                                    lay.bindPopup(feature.properties.db_name);
+                                }
                             }
                         });
                         geolay.on('click', highlightFeature);
-
                         geolay.addTo(map);
                         console.log(geolay);
                         $scope.cartodbLayers.push(geolay);
 
-
                         //Stop loading icon, show success window
                         $scope.loading = false;
-                        $scope.showSuccessWindow();
+                        $scope.showSuccessWindow();*/
 
-                    }, function errorCallback(response) {
-                        // called asynchronously if an error occurs
-                        // or server returns response with an error status.
-                        console.log('failed to load geojson');
-                        $scope.loading = false;
-
+                    })
+                    .error(function(error) {
+                        console.log('Error: ' + error);
                     });
-
 
                 /*cartodb.Tiles.getTiles(layerData, function (tilesUrl, err) {
                     if (tilesUrl === null) {
@@ -602,10 +581,14 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     controller: DialogControllerBuff,
                     template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Buffer settings</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="layer" md-on-open=""><md-option ng-value="layer" ng-repeat="layer in layers"><a>{{layer.name}}</a></md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary"> Execute buffer </md-button> </div></md-dialog>',
                     targetEvent: ev,
-                    clickOutsideToClose: true
+                    clickOutsideToClose: true,
+                    locals: {
+                        layers: $scope.layers
+                    }
                 })
                 .then(function (answer) {
-                    $scope.createBufferLayer(answer[0], answer[1], answer[2], answer[3]);
+                    console.log(answer);
+                    $scope.loadBufferLayer(answer);
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
                 });

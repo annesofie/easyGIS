@@ -2,10 +2,10 @@
  * Created by AnneSofie on 10.04.2016.
  */
 
-function DialogControllerBuff($scope, $mdDialog, $timeout, pointLayerService, lineLayerService, polygonLayerService) {
+function DialogControllerBuff($scope, $mdDialog, layers) {
     $scope.bufferdist = null;
     $scope.layer = null;
-    $scope.layers = [];
+    $scope.layers = layers;
     $scope.hide = function() {
         $mdDialog.hide();
     };
@@ -13,17 +13,13 @@ function DialogControllerBuff($scope, $mdDialog, $timeout, pointLayerService, li
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        var dist = $scope.bufferdist;
-        var layerName = $scope.layer.name;
-        var tileURL = $scope.layer.tileURL;
-        var tablename = $scope.layer.tablename;
-        var bufferInfo = [layerName, dist, tileURL, tablename];
-        $mdDialog.hide(bufferInfo);
+        $scope.layer.buffdist = $scope.bufferdist;
+        $scope.layer.datatype = 'Polygon';
+        $scope.layer.newname = $scope.layer.name + ' buff ' + $scope.bufferdist + ' m';
+        $scope.layer.newdbname = $scope.layer.name+'_buff_' + $scope.bufferdist + '_m';
+        $mdDialog.hide($scope.layer);
     };
 
-        getPointLayers(pointLayerService, $scope.layer, $scope.layers);
-        getLineLayers(lineLayerService, $scope.layer, $scope.layers);
-        getPolygonLayers(polygonLayerService, $scope.layer, $scope.layers);
 }
 function DialogController_int($scope, $mdDialog, pointLayerService, lineLayerService, polygonLayerService) {
     $scope.name = null;

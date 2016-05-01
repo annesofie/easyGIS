@@ -1,35 +1,25 @@
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
-//var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
+var pg = require('pg');
 
-
-//Mongoose, open a connectin to easygis1 database
-mongoose.connect('mongodb://annesofie:annesofie@ds019980.mlab.com:19980/heroku_g393gx7d');
-//mongoose.connect('mongodb://localhost:27017/easygis1');
-var polygonLayers = require('./models/polygonLayers.js');
-var pointLayers = require('./models/pointLayers.js');
-var lineLayers = require('./models/lineLayers.js');
-
-
-//Notifies if we connect successfully
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error: '));
-db.once('open', function() {
-  console.log('Connected to mLab anne sofie ');
-});
-
-var app = express();
-
+//pg.defaults.ssl = true;
+/* ---- Create new DB table
+var connectionString = 'postgres://localhost:5432/';
+var client = new pg.Client(connectionString);
+client.connect();
+var query = client.query('CREATE TABLE trafikkmengde(gid SERIAL PRIMARY KEY, geom text not null)');
+query.on('end', function() { client.end(); });*/
 
 //Require Routes
-var api = require('./routes/api.js');
+var routes = require('./routes/index');
 
+var app = express();
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -47,11 +37,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // routes
-app.use('/layers/', api);
-
-app.get('/', function(req, res) {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+app.use('/', routes);
 
 
 
@@ -64,8 +50,7 @@ app.use(function(req, res, next) {
 
 // error handlers
 
-// development error handler
-// will print stacktrace
+// development error handler, will print stacktrace
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);

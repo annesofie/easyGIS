@@ -92,6 +92,21 @@ easygis.factory('geoJsonService', ['$http', function($http) {
         getgeojson: getgeojson
     })
 }]);
+easygis.factory('layerService', ['$http', function($http){
+
+    function getLayerJson(URL){
+        return $http.get(URL);
+    }
+    function postLayerJson(URL, layer){
+        return $http.post(URL, layer);
+    }
+
+    return ({
+        getLayer: getLayerJson,
+        postLayer: postLayerJson
+    })
+
+}]);
 
 /*easygis.factory('Upload', ['$q', function(){
     var reader = new FileReader();
