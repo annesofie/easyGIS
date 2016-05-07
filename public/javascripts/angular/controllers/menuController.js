@@ -2,8 +2,8 @@
  * Created by AnneSofie on 14.02.2016.
  */
 
-easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'polygonLayerService', 'pointLayerService', 'lineLayerService', 'geoJsonService', 'layerService',
-    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData, polygonLayerService, pointLayerService, lineLayerService, geoJsonService, layerService) {
+easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'polygonLayerService', 'pointLayerService', 'lineLayerService', 'geoJsonService', 'layerService','$http',
+    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData, polygonLayerService, pointLayerService, lineLayerService, geoJsonService, layerService, $http) {
 
         // Toolbar search toggle
         $scope.toggleSearch = function (element) {
@@ -30,7 +30,8 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.loadLayers = function () {
             return $timeout(function () {
                 $scope.layers = [{name:'Restaurant', dbname: 'restaurant', datatype: 'Point'}, {name:'Pub', dbname: 'pub', datatype: 'Point'},
-                    {name: 'Kommuner', dbname: 'kommune', datatype: 'Polygon'}, {name: 'Trafikkmengde', dbname: 'trafikkmengde', datatype: 'Line'}];
+                    {name: 'Kommuner', dbname: 'kommune', datatype: 'Polygon'}, {name: 'Trafikkmengde', dbname: 'trafikkmengde', datatype: 'Line'},
+                    {name: 'Restaurant buff 40 m', dbname: 'restaurant_buff_66_m', datatype: 'Polygon'}];
             }, 500);
         };
 
@@ -135,24 +136,33 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             });
         });
 
-        // ----- CartoDB layers active on the map
+        // ----- Map layers active on the map
         $scope.cartodbLayer = null;
         $scope.cartodbLayers = []; //Layers on the map
 
         $scope.getLayerInfo = function (layer) {
-            console.log(' getlayerinfo: ' + layer + ' = layer ');
             var dbname = layer.dbname;
-            /*var layerData;
-            layerData = getLayerData(layer.name, layer.dist, null, layer.tileURL,
-                layer.datatype, layer.tablename, 'normal');*/
-            $scope.loadCartoDBLayer(dbname, layer.datatype);
+            $scope.addLayerToMap(dbname, layer.datatype);
         };
+        $scope.newBufferLayer = function (layer) {
+            console.log(layer);
+            $scope.loading = true;
+            var newlayer = {newname: layer.newname, dbname: layer.dbname, buffdist: layer.buffdist, newdbname: layer.newdbname};
+            layerService.postLayer('api/layer/buffer', newlayer)
+                .success(function(data) {
+                    console.log(' added ');
+                    $scope.loading = false;
+                    $scope.addLayerToMap(layer.newdbname, 'Polygon');
+                })
+                .error(function(error) {
+                        console.log(error);
+                });
+        };
+        $scope.addLayerToMap = function (dbname, datatype) {
 
-        $scope.loadCartoDBLayer = function (dbname, datatype) {
-
-            var geojsonMarkerOptions = {
+            var geojsonMarkerOptions = {  //Circles instead of markers on point-layers
                 radius: 4,
-                fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
+                fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),  //Add random color to the layer
                 color: "#000",
                 weight: 1,
                 opacity: 0.5,
@@ -166,7 +176,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     .success(function(data) {
                         //$scope.todoData = data;
                         console.log(data);
-                        var features = data[0].row_to_json.features;
+                        var features = data.data[0].row_to_json.features;
 
                         var geolay = L.geoJson(features, {
                             pointToLayer: function (feature, latlng) {
@@ -174,20 +184,21 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                             },
                             onEachFeature: function(feature, lay){
                                 feature.properties.datatype = datatype;
-
-                                if(feature.properties.komm_navn){
+                                lay.bindPopup(dbname);
+                                /*if(feature.properties.komm_navn){
                                     lay.bindPopup(feature.properties.komm_navn);
                                 } else if (feature.properties.vei_navn){
                                     lay.bindPopup(feature.properties.vei_navn);
                                 } else if (feature.properties.db_name){
                                     lay.bindPopup(feature.properties.db_name);
-                                }
+                                }*/
                             }
                         });
                         geolay.on('click', highlightFeature);
                         geolay.addTo(map);
                         console.log(geolay);
-                        $scope.cartodbLayers.push(geolay);
+                        var activelay = {name: dbname, obj: geolay};
+                        $scope.cartodbLayers.push(activelay);
 
                         //Stop loading icon, show success window
                         $scope.loading = false;
@@ -197,104 +208,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     .error(function(error) {
                         console.log('Error: ' + error);
                     });
-            });
-        };
-
-        $scope.selectedFeature = null;
-        $scope.featureList = [];
-        function highlightFeature(e) {
-            var layer = e.layer;
-            console.log(layer);
-            var index = $scope.featureList.indexOf(layer);
-            if (index >= 0) {
-                $scope.featureList.splice(index, 1);
-                layer.setStyle({
-                    "opacity": 0.5
-
-                });
-                return;
-            } else {
-                $scope.featureList.push(layer);
-                layer.setStyle({
-                    "opacity": 1
-                });
-                return;
-            }
-
-            if (!L.Browser.ie && !L.Browser.opera) {
-                layer.bringToFront();
-            }
-        }
-
-        $scope.loadBufferLayer = function (layer) {
-            console.log(layer);
-            $scope.loading = true;
-            var geojsonMarkerOptions = {
-                //radius: dist/2,
-                fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
-                color: "#000",
-                weight: 1,
-                opacity: 0.5,
-                fillOpacity: 0.8
-            };
-            leafletData.getMap().then(function (map) {
-
-                //$scope.loading = true;
-
-                var newlayer = {newname: layer.newname, dbname: layer.dbname, buffdist: layer.buffdist, newdbname: layer.newdbname};
-                layerService.postLayer('/api/layer', newlayer)
-                    .success(function(data) {
-                        //$scope.todoData = data;
-                        console.log(data);
-                        var features = data[0].row_to_json.features;
-
-                        /*var geolay = L.geoJson(features, {
-                            pointToLayer: function (feature, latlng) {
-                                return L.circleMarker(latlng, geojsonMarkerOptions);
-                            },
-                            onEachFeature: function(feature, lay){
-                                feature.properties.datatype = datatype;
-
-                                if(feature.properties.komm_navn){
-                                    lay.bindPopup(feature.properties.komm_navn);
-                                } else if (feature.properties.vei_navn){
-                                    lay.bindPopup(feature.properties.vei_navn);
-                                } else if (feature.properties.db_name){
-                                    lay.bindPopup(feature.properties.db_name);
-                                }
-                            }
-                        });
-                        geolay.on('click', highlightFeature);
-                        geolay.addTo(map);
-                        console.log(geolay);
-                        $scope.cartodbLayers.push(geolay);
-
-                        //Stop loading icon, show success window
-                        $scope.loading = false;
-                        $scope.showSuccessWindow();*/
-
-                    })
-                    .error(function(error) {
-                        console.log('Error: ' + error);
-                    });
-
-                /*cartodb.Tiles.getTiles(layerData, function (tilesUrl, err) {
-                    if (tilesUrl === null) {
-                        console.log('error: ' + err.errors.join('/n'));
-                        $scope.loading = false;
-                        console.log('bufferlayer failed');
-                    } else {
-                        var buffname = '' + name + ' buffer ' + dist + ' m'; // Name for the new buffer layer
-                        var bufflayer = L.tileLayer(tilesUrl.tiles[0], {id: buffname});
-                        addPolygonLayer(buffname, dist, tilesUrl.tiles[0], tablename); //Add layer to the database
-                        $scope.cartodbLayers.push(bufflayer);
-                        bufflayer.addTo(map);
-
-                        //Stop loading icon, show success window
-                        $scope.loading = false;
-                        $scope.showSuccessWindow();
-                    }
-                });*/
             });
         };
         $scope.createIntersectionLayer = function (name, datatype, tablename, param, intername, dist, sqltype) {
@@ -305,29 +218,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.loadIntersectionLayer = function (layerData, name, param, datatype, tablename, intername) {
             console.log(datatype + ' = datatype');
             $scope.loading = true;
-            leafletData.getMap().then(function (map) {
 
-
-
-                /*cartodb.Tiles.getTiles(layerData, function (tilesUrl, err) {
-                    if (tilesUrl === null) {
-                        console.log('error: ' + err.errors.join('/n'));
-                        $scope.loading = false;
-                    } else {
-                        var intersecname = '' + name + ' within ' + intername + '';  //Name of the new intersection layer
-
-                        var intersectionLayer = L.tileLayer(tilesUrl.tiles[0], {id: intersecname});
-                        $scope.cartodbLayers.push(intersectionLayer);
-                        intersectionLayer.addTo(map);
-
-                        addLayerToDB(intersecname, tilesUrl.tiles[0], datatype, tablename);
-
-                        //Hide loading icon, show success window
-                        $scope.loading = false;
-                        $scope.showSuccessWindow();
-                    }
-                });*/
-            });
         };
 
         //Remove layer from map
@@ -378,6 +269,33 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
 
         // **  Help functions
+
+        $scope.selectedFeature = null;
+        $scope.featureList = [];
+        function highlightFeature(e) {
+            var layer = e.layer;
+            console.log(layer);
+            var index = $scope.featureList.indexOf(layer);
+            if (index >= 0) {
+                $scope.featureList.splice(index, 1);
+                layer.setStyle({
+                    "opacity": 0.5
+
+                });
+                return;
+            } else {
+                $scope.featureList.push(layer);
+                layer.setStyle({
+                    "opacity": 1
+                });
+                return;
+            }
+
+            if (!L.Browser.ie && !L.Browser.opera) {
+                layer.bringToFront();
+            }
+        }
+
         var getLayerData = function (name, param, dist, tileURL, datatype, tablename, sqltype) {
             console.log(datatype + ' = datatype');
             console.log(tablename + ' = tablename' + dist + ' = dist ' + param + ' = param ');
@@ -588,7 +506,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 })
                 .then(function (answer) {
                     console.log(answer);
-                    $scope.loadBufferLayer(answer);
+                    $scope.newBufferLayer(answer);
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
                 });
@@ -624,7 +542,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.removeLayerWindow = function (ev) {
             $mdDialog.show({
                     controller: DialogController_removelayer,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Remove layer from map</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="activelayer" md-on-open=""> <md-option ng-value="activelayer" ng-repeat="activelayer in activelayers">{{activelayer._layers[76].feature.properties.layName}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"><div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Remove Layer</md-button> </div></md-dialog>',
+                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Remove layer from map</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="activelayer" md-on-open=""> <md-option ng-value="activelayer" ng-repeat="activelayer in activelayers">{{activelayer.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"><div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Remove Layer</md-button> </div></md-dialog>',
                     targetEvent: ev,
                     clickOutsideToClose: true,
                     locals: {

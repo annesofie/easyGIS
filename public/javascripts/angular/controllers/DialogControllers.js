@@ -87,7 +87,7 @@ function DialogController_removelayer($scope, $mdDialog, layers) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        $mdDialog.hide($scope.activelayer);
+        $mdDialog.hide($scope.activelayer.obj);
     };
     $scope.activelayers = layers;
 }
@@ -123,7 +123,7 @@ function DialogController_success($scope, $mdDialog, $timeout) {
     $scope.answer = function(answer) {
         $mdDialog.hide(answer);
     };
-    $timeout($mdDialog.hide, 40);
+    $timeout($mdDialog.hide, 80);
 
 }
 

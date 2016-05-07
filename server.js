@@ -6,7 +6,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var assert = require('assert');
-var pg = require('pg');
+//var pg = require('pg');
 
 //pg.defaults.ssl = true;
 /* ---- Create new DB table
@@ -17,7 +17,7 @@ var query = client.query('CREATE TABLE trafikkmengde(gid SERIAL PRIMARY KEY, geo
 query.on('end', function() { client.end(); });*/
 
 //Require Routes
-var routes = require('./routes/index');
+var routes = require('./routes/pg_routes');
 
 var app = express();
 
@@ -53,14 +53,22 @@ app.use(function(req, res, next) {
 // development error handler, will print stacktrace
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
+    res.status( err.code || 500 )
+        .json({
+          status: 'error',
+          message: err
+        });
   });
 }
 
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
+  res.status(err.status || 500)
+      .json({
+        status: 'error',
+        message: err.message
+      });
 });
 
 

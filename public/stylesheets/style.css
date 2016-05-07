@@ -17,6 +17,9 @@ md-content.md-default-theme {
 .dragover {
   border: 5px dashed green; }
 
+.leaflet-top {
+  z-index: 0; }
+
 md-sidenav > md-toolbar {
   padding: 15px;
   height: 150px;
