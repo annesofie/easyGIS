@@ -29,9 +29,17 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.layers = [];
         $scope.loadLayers = function () {
             return $timeout(function () {
-                $scope.layers = [{name:'Restaurant', dbname: 'restaurant', datatype: 'Point'}, {name:'Pub', dbname: 'pub', datatype: 'Point'},
+                layerService.getLayer('/api/layers/all')
+                    .success(function(data) {
+                        console.log(data);
+                        $scope.layers = data.data;
+                    })
+                    .error(function(error) {
+                    console.log('Error: ' + error);
+                });
+                /*$scope.layers = [{name:'Restaurant', dbname: 'restaurant', datatype: 'Point'}, {name:'Pub', dbname: 'pub', datatype: 'Point'},
                     {name: 'Kommuner', dbname: 'kommune', datatype: 'Polygon'}, {name: 'Trafikkmengde', dbname: 'trafikkmengde', datatype: 'Line'},
-                    {name: 'Restaurant buff 40 m', dbname: 'restaurant_buff_66_m', datatype: 'Polygon'}];
+                    {name: 'Restaurant buff 40 m', dbname: 'restaurant_buff_66_m', datatype: 'Polygon'}];*/
             }, 500);
         };
 
@@ -148,15 +156,20 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             console.log(layer);
             $scope.loading = true;
             var newlayer = {newname: layer.newname, dbname: layer.dbname, buffdist: layer.buffdist, newdbname: layer.newdbname};
+            var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
             layerService.postLayer('api/layer/buffer', newlayer)
                 .success(function(data) {
                     console.log(' added ');
                     $scope.loading = false;
                     $scope.addLayerToMap(layer.newdbname, 'Polygon');
+                    layerService.postLayer('/api/layer/new', layerinfo);
                 })
                 .error(function(error) {
                         console.log(error);
                 });
+        };
+        $scope.newIntersectionLayer = function(layer){
+
         };
         $scope.addLayerToMap = function (dbname, datatype) {
 
@@ -167,6 +180,11 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 weight: 1,
                 opacity: 0.5,
                 fillOpacity: 0.8
+            };
+            var myStyle = {
+                color: '#' + Math.floor(Math.random() * 16777215).toString(16),  //Add random color to the layer
+                weight: 5,
+                opacity: 0.65
             };
 
             leafletData.getMap().then(function (map) {
@@ -182,6 +200,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                             pointToLayer: function (feature, latlng) {
                                 return L.circleMarker(latlng, geojsonMarkerOptions);
                             },
+                            style: myStyle,
                             onEachFeature: function(feature, lay){
                                 feature.properties.datatype = datatype;
                                 lay.bindPopup(dbname);
@@ -497,7 +516,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.showBufferWindow = function (ev) {
             $mdDialog.show({
                     controller: DialogControllerBuff,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Buffer settings</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="layer" md-on-open=""><md-option ng-value="layer" ng-repeat="layer in layers"><a>{{layer.name}}</a></md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary"> Execute buffer </md-button> </div></md-dialog>',
+                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Buffer settings</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="layer" md-on-open=""><md-option ng-value="layer" ng-repeat="layer in layers"><a>{{layer.layername}}</a></md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary"> Execute buffer </md-button> </div></md-dialog>',
                     targetEvent: ev,
                     clickOutsideToClose: true,
                     locals: {

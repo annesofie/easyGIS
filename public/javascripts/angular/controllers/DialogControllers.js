@@ -15,8 +15,8 @@ function DialogControllerBuff($scope, $mdDialog, layers) {
     $scope.answer = function(answer) {
         $scope.layer.buffdist = $scope.bufferdist;
         $scope.layer.datatype = 'Polygon';
-        $scope.layer.newname = $scope.layer.name + ' buff ' + $scope.bufferdist + ' m';
-        $scope.layer.newdbname = $scope.layer.name+'_buff_' + $scope.bufferdist + '_m';
+        $scope.layer.newname = $scope.layer.layername + ' buff ' + $scope.bufferdist + ' m';
+        $scope.layer.newdbname = $scope.layer.layername + '_buff_' + $scope.bufferdist + '_m';
         $mdDialog.hide($scope.layer);
     };
 

@@ -15,13 +15,13 @@
                                         </md-select>
                                         <md-select placeholder="Choose layer" ng-model="layer" md-on-open="">
                                             <i>Point layers</i>
-                                            <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.name}}</a></md-option>
+                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.name}}</a></md-option>
                                             <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no active point layers!</i></p>
                                             <i>Line layers</i>
-                                            <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.name}}</a></md-option>
+                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.name}}</a></md-option>
                                             <p ng-show="(layers | filter:{datatype: 'Line'}).length == 0"><i>There are no active line layers!</i></p>
                                             <i>Polygon layers</i>
-                                            <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.name}}</a></md-option>
+                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.name}}</a></md-option>
                                             <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
                                         </md-select>
                                     </div>
