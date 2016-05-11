@@ -44,7 +44,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         };
 
 
-
         // ---- Leaflet Draw
         var drawnItems = new L.FeatureGroup();
         for (var i = 0; i < $scope.savedItems.length; i++) {
@@ -268,14 +267,14 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 weight: 6,
                 opacity: 0.65
             };
-            leafletData.getMap().then(function (map) {
-                $scope.loading = true;
+            $scope.loading = true;
+            layerService.getLayer('/api/layer/' + dbname)
+                .success(function (data) {
+                    console.log(data);
+                    leafletData.getMap().then(function (map) {
+                        console.log(map);
 
-                layerService.getLayer('/api/layer/' + dbname)
-                    .success(function (data) {
-                        console.log(data);
                         var features = data.data[0].row_to_json.features;
-
                         var geolay = L.geoJson(features, {
                             style: myStyle,
                             pointToLayer: function (feature, latlng) {
@@ -298,12 +297,12 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                         //Stop loading icon, show success window
                         $scope.loading = false;
                         $scope.showSuccessWindow();
-
-                    })
-                    .error(function (error) {
-                        console.log('Error: ' + error);
                     });
-            });
+
+                })
+                .error(function (error) {
+                    console.log('Error: ' + error);
+                });
 
 
         };
