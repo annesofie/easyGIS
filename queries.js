@@ -11,8 +11,19 @@ var options = {
 };
 
 var pgp = require('pg-promise')(options);
+console.log(process.env.DATABASE_URL);
 var connectionString = process.env.DATABASE_URL || 'postgres://localhost:5432/AnneSofie';
-var db = pgp(connectionString);
+var cn = {
+    host: 'ec2-184-73-216-242.compute-1.amazonaws.com',
+    port: 5432,
+    database: 'd1nbdgn5u9fh9s',
+    user: 'ofufbplhdsewot',
+    password: 'd6uTWxpFoW5Z0zNYOFrm3ZqdUj',
+    ssl: true
+
+};
+var db = pgp(cn);
+//var db = pgp(connectionString);
 
 // add query functions
 
