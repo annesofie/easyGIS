@@ -95,12 +95,12 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             console.log(drawnItems + ' drawnItems ');
 
             // Init the map with the saved elements
-            var printLayers = function () {
+           /* var printLayers = function () {
                 console.log("After: ");
                 map.eachLayer(function (layer) {
                     console.log(layer);
                 });
-            };
+            };*/
             drawnItems.addTo(map);
 
             map.on('draw:created', function (e) {
@@ -150,44 +150,63 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.expandActiveLayers = false;
         $scope.showEditMenu = false;
 
-        $scope.setExpandBool = function() { //Show list of active layers
+        $scope.setExpandLayerBool = function() { //Show list of active layers
             if($scope.expandActiveLayers) {
                 $scope.expandActiveLayers = false;
+                //$scope.showEditMenu = false;
             } else {
                 $scope.expandActiveLayers = true;
             }
         };
 
-        $scope.chosenActiveLayer = [];
+        $scope.chosenActiveLayer=null;
         $scope.setEditMenuBool = function(layer) { //Show edit layer menu
-            $scope.showEditMenu = true;
-            console.log($scope.activeLayer);
-            console.log(layer);
-            if ($scope.chosenActiveLayer.length > 0){
-                $scope.activeLayer.obj.setStyle({ //Old active layer
-                    "opacity": 0.5
+            if($scope.chosenActiveLayer){
+                $scope.chosenActiveLayer.obj.setStyle({ //Old active layer
+                    "opacity": 0.65
                 });
-                $scope.chosenActiveLayer.splice(0, 1); //Remove old layer
+
             }
-            $scope.activeLayer = layer; //New active layer
-            highlightChosenActive(layer.obj);
+            if(layer == 0){
+                $scope.showEditMenu = false;
+            } else {
+                $scope.showEditMenu = true;
+                console.log($scope.activeLayer);
+                console.log(layer);
+                $scope.chosenActiveLayer = layer; //New active layer
+                highlightChosenActive(layer.obj);
+            }
         };
         function highlightChosenActive(layer){
-                $scope.chosenActiveLayer.push(layer);
                 layer.setStyle({
                     "opacity": 1
                 })
         }
 
+        // Edit layer menu methods
         $scope.hexPicker = {
             color: ''
         };
         $scope.changeLayerColor = function() {
             console.log($scope.activeLayer);
-            $scope.activeLayer.obj.setStyle({
-                color: $scope.hexPicker.color
+            $scope.chosenActiveLayer.obj.setStyle({
+                color: $scope.hexPicker.color,
+                fillColor: $scope.hexPicker.color
             })
         };
+        $scope.bringToFront = function() {
+            $scope.chosenActiveLayer.obj.bringToFront();
+        };
+        $scope.removeLayer = function () {
+            leafletData.getMap().then(function (map) {
+                map.removeLayer($scope.chosenActiveLayer.obj);
+                var i = $scope.activeLayers.indexOf($scope.chosenActiveLayer);
+                $scope.activeLayers.splice(i, 1); // Remove layer from activeLayers list
+                console.log($scope.activeLayers);
+                $scope.showRemovedSuccessWindow();
+            });
+        };
+
 
         $scope.getLayerInfo = function (layer) {
             var dbname = layer.dbname;
@@ -240,12 +259,13 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),  //Add random color to the layer
                 color: "#000",
                 weight: 1,
-                opacity: 0.5,
+                opacity: 0.65,
                 fillOpacity: 0.8
             };
             var myStyle = {
                 color: '#' + Math.floor(Math.random() * 16777215).toString(16),  //Add random color to the layer
-                weight: 5,
+                fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
+                weight: 6,
                 opacity: 0.65
             };
             leafletData.getMap().then(function (map) {
@@ -376,24 +396,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
 
         // ** Left menu, open new window:
-
-        $scope.showEditWindow = function(ev) {
-            $mdDialog.show({
-                    controller: DialogControllerBuff,
-                    templateUrl: 'views/editlayer.tmpl.html',
-                    targetEvent: ev,
-                    clickOutsideToClose: true,
-                    locals: {
-                        layers: $scope.activelayer
-                    }
-                })
-                .then(function (answer) {
-                    console.log(answer);
-                    $scope.newBufferLayer(answer);
-                }, function () {
-                    $scope.alert = 'You cancelled the dialog.';
-                });
-        };
 
         $scope.showBufferWindow = function (ev) {
             $mdDialog.show({

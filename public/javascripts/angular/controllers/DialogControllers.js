@@ -119,7 +119,7 @@ function DialogController_success($scope, $mdDialog, $timeout) {
     $scope.answer = function(answer) {
         $mdDialog.hide(answer);
     };
-    $timeout($mdDialog.hide, 80);
+    $timeout($mdDialog.hide, 120);
 
 }
 
