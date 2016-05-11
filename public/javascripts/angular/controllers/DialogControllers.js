@@ -15,19 +15,18 @@ function DialogControllerBuff($scope, $mdDialog, layers) {
     $scope.answer = function(answer) {
         $scope.layer.buffdist = $scope.bufferdist;
         $scope.layer.datatype = 'Polygon';
-        $scope.layer.newname = $scope.layer.layername + ' buff ' + $scope.bufferdist + ' m';
-        $scope.layer.newdbname = $scope.layer.layername + '_buff_' + $scope.bufferdist + '_m';
+        $scope.layer.newname = $scope.layer.layername + ' buff ' + $scope.bufferdist + 'm';
+        $scope.layer.newdbname = $scope.layer.dbname + '_buff_' + $scope.bufferdist + '_m';
         $mdDialog.hide($scope.layer);
     };
 
 }
-function DialogController_int($scope, $mdDialog, pointLayerService, lineLayerService, polygonLayerService) {
+function DialogController_int($scope, $mdDialog, layers) {
     $scope.name = null;
     $scope.names = ['Trondheim', 'Bergen', 'Oslo', 'Molde', 'Kristiansand', 'Stavanger', 'Tromsø'];
     $scope.layer = null;
-    $scope.layers = [];
+    $scope.layers = layers;
     $scope.polygonlayer = null;
-    $scope.polygonlayers = [];
 
     $scope.hide = function() {
         $mdDialog.hide();
@@ -38,25 +37,22 @@ function DialogController_int($scope, $mdDialog, pointLayerService, lineLayerSer
     $scope.answer = function(answer) {
         if($scope.name) {
             $scope.layer.intervar= $scope.name;
-            $scope.layer.buffdist = 0;
             $scope.layer.intername = $scope.name;
             $scope.layer.sqltype = 'inter_city';
             console.log(JSON.stringify($scope.layer) + ' input inter_city');
             $mdDialog.hide($scope.layer);
 
         } else if ($scope.polygonlayer) {
-            $scope.layer.intervar = $scope.polygonlayer.tablename;
-            $scope.layer.buffdist = $scope.polygonlayer.dist;
-            $scope.layer.intername = $scope.polygonlayer.name;
+            $scope.layer.b_dbname = $scope.polygonlayer.dbname;
+            var dist = $scope.polygonlayer.layername.substring($scope.polygonlayer.layername.lastIndexOf(" ")+1);
+            var buffname = $scope.polygonlayer.layername.substr(0,$scope.polygonlayer.layername.indexOf(' '));
+            $scope.layer.newname = $scope.layer.layername+' within '+dist+' of '+buffname;
+            $scope.layer.newdbname = $scope.layer.dbname+'_within_'+dist+buffname;
             $scope.layer.sqltype = 'inter_buff';
             console.log(JSON.stringify($scope.layer) + ' input inter_buff');
             $mdDialog.hide($scope.layer);
-
         }
     };
-    getPointLayers(pointLayerService, $scope.layer, $scope.layers);
-    getLineLayers(lineLayerService, $scope.layer, $scope.layers);
-    getPolygonLayers(polygonLayerService, $scope.polygonlayer, $scope.polygonlayers);
 }
 function DialogController_cont($scope, $mdDialog) {
     $scope.layer_polygon = null;

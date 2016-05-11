@@ -145,36 +145,98 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         });
 
         // ----- Map layers active on the map
-        $scope.cartodbLayer = null;
-        $scope.cartodbLayers = []; //Layers on the map
+        $scope.activeLayer = null;
+        $scope.activeLayers = []; //Layers on the map
+        $scope.expandActiveLayers = false;
+        $scope.showEditMenu = false;
+
+        $scope.setExpandBool = function() { //Show list of active layers
+            if($scope.expandActiveLayers) {
+                $scope.expandActiveLayers = false;
+            } else {
+                $scope.expandActiveLayers = true;
+            }
+        };
+
+        $scope.chosenActiveLayer = [];
+        $scope.setEditMenuBool = function(layer) { //Show edit layer menu
+            $scope.showEditMenu = true;
+            console.log($scope.activeLayer);
+            console.log(layer);
+            if ($scope.chosenActiveLayer.length > 0){
+                $scope.activeLayer.obj.setStyle({ //Old active layer
+                    "opacity": 0.5
+                });
+                $scope.chosenActiveLayer.splice(0, 1); //Remove old layer
+            }
+            $scope.activeLayer = layer; //New active layer
+            highlightChosenActive(layer.obj);
+        };
+        function highlightChosenActive(layer){
+                $scope.chosenActiveLayer.push(layer);
+                layer.setStyle({
+                    "opacity": 1
+                })
+        }
+
+        $scope.hexPicker = {
+            color: ''
+        };
+        $scope.changeLayerColor = function() {
+            console.log($scope.activeLayer);
+            $scope.activeLayer.obj.setStyle({
+                color: $scope.hexPicker.color
+            })
+        };
 
         $scope.getLayerInfo = function (layer) {
             var dbname = layer.dbname;
-            $scope.addLayerToMap(dbname, layer.datatype);
+            for (lay in $scope.activeLayers){
+                if(lay.hasOwnProperty('name')){
+                    if(lay.name == layer.layername){
+                        return;
+                    }
+                }
+            }
+            $scope.addLayerToMap(dbname, layer.layername, layer.datatype);
         };
         $scope.newBufferLayer = function (layer) {
             console.log(layer);
             $scope.loading = true;
             var newlayer = {newname: layer.newname, dbname: layer.dbname, buffdist: layer.buffdist, newdbname: layer.newdbname};
             var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
-            layerService.postLayer('api/layer/buffer', newlayer)
+            console.log(layerinfo);
+            layerService.postLayer('/api/layer/buffer/', newlayer)
                 .success(function(data) {
                     console.log(' added ');
-                    $scope.loading = false;
-                    $scope.addLayerToMap(layer.newdbname, 'Polygon');
                     layerService.postLayer('/api/layer/new', layerinfo);
+                    $scope.addLayerToMap(layer.newdbname,  layer.newname, 'Polygon');
                 })
                 .error(function(error) {
                         console.log(error);
                 });
         };
         $scope.newIntersectionLayer = function(layer){
+            console.log(layer);
+            $scope.loading = true;
+            var newlayer = {newname: layer.newname, a_dbname: layer.dbname, b_dbname: layer.b_dbname, newdbname: layer.newdbname};
+            var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
+            console.log(newlayer);
+            console.log(layerinfo);
+            layerService.postLayer('/api/layer/intersection/', newlayer)
+                .then(function(response){
+                    $scope.loading = false;
+                    console.log(' added intersection layer');
+                }, function(response) {
+                    //error
+                    console.log(response);
+                });
 
         };
-        $scope.addLayerToMap = function (dbname, datatype) {
+        $scope.addLayerToMap = function (dbname, name, datatype) {
 
             var geojsonMarkerOptions = {  //Circles instead of markers on point-layers
-                radius: 4,
+                radius: 2,
                 fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),  //Add random color to the layer
                 color: "#000",
                 weight: 1,
@@ -186,48 +248,44 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 weight: 5,
                 opacity: 0.65
             };
-
             leafletData.getMap().then(function (map) {
                 $scope.loading = true;
 
-                layerService.getLayer('/api/layer/'+dbname)
-                    .success(function(data) {
-                        //$scope.todoData = data;
+                layerService.getLayer('/api/layer/' + dbname)
+                    .success(function (data) {
                         console.log(data);
                         var features = data.data[0].row_to_json.features;
 
                         var geolay = L.geoJson(features, {
+                            style: myStyle,
                             pointToLayer: function (feature, latlng) {
                                 return L.circleMarker(latlng, geojsonMarkerOptions);
                             },
-                            style: myStyle,
-                            onEachFeature: function(feature, lay){
+                            onEachFeature: function (feature, lay) {
                                 feature.properties.datatype = datatype;
-                                lay.bindPopup(dbname);
-                                /*if(feature.properties.komm_navn){
+                                lay.bindPopup(name);
+                                if (feature.properties.komm_navn) {
                                     lay.bindPopup(feature.properties.komm_navn);
-                                } else if (feature.properties.vei_navn){
-                                    lay.bindPopup(feature.properties.vei_navn);
-                                } else if (feature.properties.db_name){
-                                    lay.bindPopup(feature.properties.db_name);
-                                }*/
+                                }
                             }
                         });
-                        geolay.on('click', highlightFeature);
+                        //geolay.on('click', highlightFeature);
                         geolay.addTo(map);
                         console.log(geolay);
-                        var activelay = {name: dbname, obj: geolay};
-                        $scope.cartodbLayers.push(activelay);
+                        var activelay = {name: name, obj: geolay};
+                        $scope.activeLayers.push(activelay);
 
                         //Stop loading icon, show success window
                         $scope.loading = false;
                         $scope.showSuccessWindow();
 
                     })
-                    .error(function(error) {
+                    .error(function (error) {
                         console.log('Error: ' + error);
                     });
             });
+
+
         };
         $scope.createIntersectionLayer = function (name, datatype, tablename, param, intername, dist, sqltype) {
             console.log('createIntersLayer: name = ' + name + ' town = ' + param + ' tablename = ' + tablename + ' datatype: ' + datatype);
@@ -244,9 +302,9 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.removeLayerFromMap = function (layer) {
             leafletData.getMap().then(function (map) {
                 map.removeLayer(layer);
-                var i = $scope.cartodbLayers.indexOf(layer);
-                $scope.cartodbLayers.splice(i, 1); // Remove layer from cartodbLayers list
-                console.log($scope.cartodbLayers);
+                var i = $scope.activeLayers.indexOf(layer);
+                $scope.activeLayers.splice(i, 1); // Remove layer from activeLayers list
+                console.log($scope.activeLayers);
                 $scope.showRemovedSuccessWindow();
             });
         };
@@ -299,7 +357,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 $scope.featureList.splice(index, 1);
                 layer.setStyle({
                     "opacity": 0.5
-
                 });
                 return;
             } else {
@@ -315,208 +372,33 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             }
         }
 
-        var getLayerData = function (name, param, dist, tileURL, datatype, tablename, sqltype) {
-            console.log(datatype + ' = datatype');
-            console.log(tablename + ' = tablename' + dist + ' = dist ' + param + ' = param ');
-
-            var cssCDB = getCSS(tablename, datatype);
-            var sql = null;
-
-            if (sqltype === 'normal') {
-                sql = getSQL_(tablename); //Returns the normal sql statement
-            } else if (sqltype === 'buffer') {
-                sql = getSQL_buffer(tablename, param);
-                cssCDB = changeCSS(tablename, datatype);
-            } else if (sqltype === 'inter_city') {
-                sql = getSQL_intersection_within_city(tablename, param);
-                cssCDB = changeCSS(tablename, datatype);
-            } else if (sqltype === 'inter_buff'){
-                sql = getSQL_intersection_within_buffer(tablename, param, dist);
-                cssCDB = changeCSS(tablename, datatype);
-            }
-            console.log(sql + ' = sql ');
-            var layerData = {
-                user_name: 'anneri',
-                type: 'cartodb',
-                sublayers: [
-                    {
-                        //name: name,
-                        sql: sql,
-                        cartocss: cssCDB
-                    }]
-            };
-            return layerData;
-        };
-        var getCSS = function (table, type) {
-            var cartocss;
-            var letters = '0123456789ABCDEF'.split('');
-            var color = '#';
-            for (var i = 0; i < 6; i++ ) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            if (type === 'Point') {
-                cartocss = '#' + table + '{marker-fill-opacity:.9;marker-line-color:#FFF;marker-line-width:0.2;marker-line-opacity:1;marker-placement:point;marker-type:ellipse;marker-width:9;marker-fill:' + color + ' ;marker-allow-overlap:true}';
-            } else if (type === 'Line') {
-                cartocss = '#' + table + '{line-color:' + color + ';line-width:2;line-opacity:1}';
-            } else if (type === 'Polygon') {
-                cartocss = '#' + table + '{polygon-fill:' + color + ';polygon-opacity:.7;line-color:#FFF;line-width:.2;line-opacity:.7}';
-            }
-            return cartocss;
-        };
-        var changeCSS = function (table, type) {
-            var cartocss;
-            if (type === 'Point') {
-                cartocss = '#' + table + '{marker-fill-opacity:.9;marker-line-color:#FFF;marker-line-width:0.2;marker-line-opacity:1;marker-placement:point;marker-type:ellipse;marker-width:9;marker-fill: #' + Math.floor(Math.random() * 16777215).toString(16) + ';marker-allow-overlap:true}';
-            } else if (type === 'Line') {
-                cartocss = '#' + table + '{line-color: #' + Math.floor(Math.random() * 16777215).toString(16) + ';line-width:2;line-opacity:1}';
-            } else if (type === 'Polygon') {
-                cartocss = '#' + table + '{polygon-fill: #' + Math.floor(Math.random() * 16777215).toString(16) + ';polygon-opacity:.7;line-color:#FFF;line-width:.2;line-opacity:.7}';
-            }
-            return cartocss;
-        };
-        var getSQL_ = function (table) {
-            var sql_cdb = 'SELECT '+table+'.cartodb_id, '+table+'.the_geom, '+table+'.the_geom_webmercator FROM '+table; //+' WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point('+$scope.mapBoundsNorthEast.lat+','+$scope.mapBoundsNorthEast.long+'),ST_Point('+$scope.mapBoundsSouthWest.lat+','+$scope.mapBoundsSouthWest.long+')),4326)';
-            return sql_cdb;
-        };
-        var getSQL_buffer = function (table, dist) {
-            var sql_cdb = 'SELECT ST_Transform(ST_Buffer(the_geom::geography,'+
-                dist+')::geometry, 3857) as the_geom_webmercator,cartodb_id,the_geom FROM ' + table;
-            return sql_cdb;
-        };
-        var getSQL_intersection_within_city = function (table, town) {
-            var sql_cdb = "SELECT " + table + ".cartodb_id, " + table + ".the_geom_webmercator, k.navn FROM " + table + ", kommuner as k WHERE st_intersects(" + table + ".the_geom, k.the_geom) and k.navn='" + town + "'";
-            return sql_cdb;
-        };
-        var getSQL_intersection_within_buffer = function(table_lay, table_buff, dist) {
-            var sql_cdb = "SELECT "+table_lay+".cartodb_id, "+table_lay+".the_geom, "+table_lay+".the_geom_webmercator FROM "+table_lay+", "+table_buff+" WHERE ST_DWithin("+table_lay+".the_geom_webmercator, "+table_buff+".the_geom_webmercator, "+dist+")";
-            return sql_cdb;
-        };
-        var getSQL_distance = function (table) {
-
-        };
-
         // ** Help functions to get/add layers from/to database
 
-        function addLayerToDB(name, tileurl, datatype, tablename){
-            if (datatype === 'Polygon') {
-                console.log('adds polygonlayer');
-                addPolygonLayer(name, 0, tileurl, tablename);
-            } else if (datatype === 'Line') {
-                console.log('adds linelayer');
-                addLineLayer(name, tileurl, tablename);
-            } else if (datatype === 'Point') {
-                console.log('adds pointlayer');
-                addPointLayer(name, tileurl, tablename);
-            }
-        }
-
-        function getPointLayers(pointLayerService, layers) {
-            pointLayerService.getPointLayers().then(function (response) {
-                for (var key in response.data) {
-                    if (response.data.hasOwnProperty(key)) {
-                        var layer = {
-                            name: response.data[key].name,
-                            tileURL: response.data[key].tileURL,
-                            datatype: 'Point',
-                            tablename: response.data[key].tablename
-                        };
-
-                    }
-                    if ($scope.layers.indexOf(layer) == -1) {
-                        layers.push(layer);
-                    }
-                }
-            }, function (response) {
-                console.log(response + ', failed to load points');
-                //Error
-            });
-        }
-
-        function getLineLayers(lineLayerService, layers) {
-            lineLayerService.getLineLayers().then(function (response) {
-                for (var key in response.data) {
-                    if (response.data.hasOwnProperty(key)) {
-                        var layer = {
-                            name: response.data[key].name,
-                            tileURL: response.data[key].tileURL,
-                            datatype: 'Line',
-                            tablename: response.data[key].tablename
-                        };
-                    }
-                    if ($scope.layers.indexOf(layer) == -1) {
-                        layers.push(layer);
-                    }
-                }
-            }, function (response) {
-                console.log(response + ', failed to load lines');
-                //Error
-            });
-        }
-
-        function getPolygonLayers(polygonLayerService, layers) {
-            polygonLayerService.getPolyLayers().then(function (response) {
-                for (var key in response.data) {
-                    if (response.data.hasOwnProperty(key)) {
-                        var layer = {
-                            name: response.data[key].name,
-                            dist: response.data[key].dist,
-                            tileURL: response.data[key].tileURL,
-                            datatype: 'Polygon',
-                            tablename: response.data[key].tablename
-                        };
-                    }
-                    if ($scope.layers.indexOf(layer) == -1) {
-                        layers.push(layer);
-                    }
-                }
-            }, function (response) {
-                console.log(response + ', failed to load polygons');
-                //Error
-            });
-        }
-
-        function addPolygonLayer(name, dist, tileurl, tablename) {
-            polygonLayerService.addpolygonlayer(name, dist, tileurl, tablename)
-                .then(function (response) {
-                    if (response.status === 200) {
-                        console.log('Polygonlayer ble lagt til');
-                    }
-                }, function () {
-                    console.log('adding failed');
-                    $scope.loading = false;
-                });
-        }
-
-        function addLineLayer(name, tileurl, tablename) {
-            lineLayerService.addLineLayer(name, tileurl, tablename)
-                .then(function (response) {
-                    if (response.status === 200) {
-                        console.log('Linelayer ble lagt til');
-                    }
-                }, function () {
-                    console.log('adding failed');
-                    $scope.loading = false;
-                });
-        }
-
-        function addPointLayer(name, tileurl, tablename) {
-            pointLayerService.addPointLayer(name, tileurl, tablename)
-                .then(function (response) {
-                    if (response.status === 200) {
-                        console.log('Linelayer ble lagt til');
-                    }
-                }, function () {
-                    console.log('adding failed');
-                    $scope.loading = false;
-                });
-        }
 
         // ** Left menu, open new window:
+
+        $scope.showEditWindow = function(ev) {
+            $mdDialog.show({
+                    controller: DialogControllerBuff,
+                    templateUrl: 'views/editlayer.tmpl.html',
+                    targetEvent: ev,
+                    clickOutsideToClose: true,
+                    locals: {
+                        layers: $scope.activelayer
+                    }
+                })
+                .then(function (answer) {
+                    console.log(answer);
+                    $scope.newBufferLayer(answer);
+                }, function () {
+                    $scope.alert = 'You cancelled the dialog.';
+                });
+        };
 
         $scope.showBufferWindow = function (ev) {
             $mdDialog.show({
                     controller: DialogControllerBuff,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Buffer settings</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="layer" md-on-open=""><md-option ng-value="layer" ng-repeat="layer in layers"><a>{{layer.layername}}</a></md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary"> Execute buffer </md-button> </div></md-dialog>',
+                    templateUrl: 'views/buffer.tmpl.html',
                     targetEvent: ev,
                     clickOutsideToClose: true,
                     locals: {
@@ -535,10 +417,14 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     controller: DialogController_int,
                     templateUrl: 'views/intersection.tmpl.html',
                     targetEvent: ev,
-                    clickOutsideToClose: true
+                    clickOutsideToClose: true,
+                    locals: {
+                        layers: $scope.layers
+                    }
                 })
                 .then(function (answer) {
-                    $scope.createIntersectionLayer(answer.name, answer.datatype, answer.tablename, answer.intervar, answer.intername, answer.buffdist, answer.sqltype);
+                    console.log(answer);
+                    $scope.newIntersectionLayer(answer);
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
                 });
@@ -565,7 +451,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     targetEvent: ev,
                     clickOutsideToClose: true,
                     locals: {
-                        layers: $scope.cartodbLayers
+                        layers: $scope.activeLayers
                     }
                 })
                 .then(function (answer) {

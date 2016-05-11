@@ -2,7 +2,7 @@
  * Created by AnneSofie on 13.02.2016.
  */
 
-var easygis = angular.module("easygis", ['ngMaterial', 'ngMessages', 'ngRoute', 'ngFileUpload', 'leaflet-directive']);
+var easygis = angular.module("easygis", ['ngMaterial', 'ngMessages', 'ngRoute', 'ngFileUpload', 'leaflet-directive', 'colorpicker.module']);
 
 easygis.config(function($routeProvider) {
 

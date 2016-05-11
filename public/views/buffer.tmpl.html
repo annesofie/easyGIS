@@ -1,0 +1,21 @@
+<md-dialog aria-label="Form">
+    <md-content class="md-padding">
+        <form name="buffer"><h3>Buffer settings</h3>
+            <div layout layout-sm="column">
+                <md-select placeholder="Choose layer" ng-model="layer" md-on-open="">
+                    <md-option ng-value="layer" ng-repeat="layer in layers | filter: {layername: '!buff'}"><a>{{layer.layername}}</a>
+                    </md-option>
+                </md-select>
+                </md-menu>
+            </div>
+            <div layout layout-sm="column">
+                <md-input-container flex><label>Buffer distance [m]</label> <input ng-model="bufferdist">
+                </md-input-container>
+                <div class="md-dialog-actions" layout="row"><span flex></span>
+                    <md-button ng-click="cancel()"> Cancel</md-button>
+                    <md-button ng-click="answer(hei)" class="md-primary"> Execute buffer</md-button>
+                </div>
+            </div>
+        </form>
+    </md-content>
+</md-dialog>

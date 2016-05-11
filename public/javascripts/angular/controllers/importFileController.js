@@ -5,7 +5,7 @@
 easygis.controller('importFileController', ['$scope', 'Upload', '$timeout',
     function($scope, Upload, $timeout) {
 
-        $scope.activeLayers = [];
+        /*$scope.activeLayers = [];
         $scope.newLayerName = '';
 
         $scope.$watch('file', function() {
@@ -21,6 +21,6 @@ easygis.controller('importFileController', ['$scope', 'Upload', '$timeout',
                 })
             }
         })
-        $scope.log = '';
+        $scope.log = '';*/
 
     }])

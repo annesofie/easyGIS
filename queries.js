@@ -17,7 +17,6 @@ var db = pgp(connectionString);
 // add query functions
 
 function getLayernames(req, res) {
-
     db.any("SELECT * FROM layers")
         .then(function(data) {
             res.status(200)
@@ -30,9 +29,9 @@ function getLayernames(req, res) {
         .catch(function (err) {
             return res.status(400).json(err);
         });
-
 }
 function addLayer(req, res) {
+    console.log(req.body);
     db.none("INSERT INTO layers (layername, dbname, datatype) " +
         " VALUES (${layername}, ${dbname}, ${datatype})", req.body)
         .then(function (data) {
@@ -43,7 +42,10 @@ function addLayer(req, res) {
                 });
         })
         .catch(function (err) {
-            return res.status(400).json(err);
+            return res.status(400).json({
+                status: 'failes',
+                message: JSON.stringify(err)
+            });
         });
 }
 function getAllFromTable(req, res) {
@@ -84,7 +86,7 @@ function createBufferLayer(req, res) {
     var dist = req.body.buffdist;
     var newdbname = req.body.newdbname;
     console.log(dbname + ' = dbname');
-    console.log(dist + ' = dists');
+    console.log(dist + ' = dist');
     console.log('createbufferlayer');
 
     db.none('CREATE TABLE IF NOT EXISTS '+newdbname+' (gid SERIAL PRIMARY KEY, geom text not null);'+
@@ -101,10 +103,33 @@ function createBufferLayer(req, res) {
             return res.status(400).json(err);
         });
 }
-function createIntersectionLayer(req, res) {
+function createIntersectionWithBuffLayer(req, res) {
+    //Data from http requests
+    console.log('inside create intersection layer');
+    var a_dbname = req.body.a_dbname;
+    var b_dbname = req.body.b_dbname;
+    var newdbname = req.body.newdbname;
+    console.log(req.body);
 
-
-
+    db.none('CREATE TABLE IF NOT EXISTS '+newdbname+' (gid SERIAL PRIMARY KEY, geom text not null); '+
+    ' INSERT INTO '+newdbname+' (geom) '+
+    ' SELECT  CASE  WHEN ST_CoveredBy('+a_dbname+'.geom, '+b_dbname+'.geom) ' +
+        ' THEN '+a_dbname+'.geom ELSE ST_AsText(ST_Multi(ST_Intersection('+a_dbname+'.geom, '+b_dbname+'.geom))) ' +
+    ' END AS geom FROM '+a_dbname+' INNER JOIN '+b_dbname+' ON ST_Intersects('+a_dbname+'.geom, '+a_dbname+'.geom);')
+        .then(function (data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    message: 'Intersectionlayer is added'
+                });
+        })
+        .catch(function (err) {
+           // console.log(err.toString());
+            return res.status(400).json({
+                status: 'failed',
+                message: JSON.stringify(err)
+            });
+        });
 }
 
 module.exports = {
@@ -112,5 +137,6 @@ module.exports = {
     addLayer: addLayer,
     getAllFromTable: getAllFromTable,
     createNewTable: createNewTable,
-    createBufferLayer: createBufferLayer
+    createBufferLayer: createBufferLayer,
+    createIntersectionWithBuffLayer: createIntersectionWithBuffLayer
 };

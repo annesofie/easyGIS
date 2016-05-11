@@ -27,6 +27,50 @@
                 <div flex="15">
                 </div>
             </md-list-item>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="setExpandBool()">
+                <md-tooltip md-direction="right">Click here to see and edit active layers</md-tooltip>
+                <md-icon class="md-primary md-icon-button" md-svg-icon="hardware:ic_keyboard_arrow_down_24px"></md-icon>
+                <div class="md-list-item-text" flex="60">
+                    <span class="md-body-2">Edit active layers</span>
+                </div>
+            </md-list-item>
+            <div ng-show="expandActiveLayers" style="padding-left: 20%;">
+                    <md-tooltip md-direction="right">Click here to edit the active layer</md-tooltip>
+                    <div flex="15"> </div>
+                    <md-radio-group ng-model="activeLayer">
+                        <md-radio-button ng-repeat="activeLayer in activeLayers" class="md-primary" ng-click="setEditMenuBool(activeLayer)">
+                            {{activeLayer.name}}
+                        </md-radio-button>
+                    </md-radio-group>
+                <p ng-show="(activeLayers).length == 0"><i>There are no active layers on the map</i></p>
+            </div>
+            <div ng-show="showEditMenu">
+                <md-divider></md-divider>
+                <md-subheader  class="md-no-sticky">Edit layer</md-subheader>
+                <md-content layout-padding layout="row"  layout-align="start end">
+                    <form name="projectForm">
+                        <md-input-container>
+                            <label>Change color</label>
+                            <input colorpicker ng-model="hexPicker.color" type="text" class="">
+                        </md-input-container>
+                        <md-button ng-click="changeLayerColor()" aria-label="colorchanger" type="submit" class="md-raised md-small" layout="column">Add</md-button>
+                    </form>
+                </md-content>
+                <md-content layout-padding layout="row"  layout-align="start end">
+                    <label>Remove layer</label>
+                    <md-button ng-click="" aria-label="deletelayer" type="submit" class="md-raised md-small" layout="column">
+                        <md-icon md-svg-icon="action:ic_delete_24px" aria-label="Add Point" flex="12"></md-icon>
+                    </md-button>
+                </md-content>
+                <md-content layout-padding layout="row"  layout-align="start end">
+                    <md-button ng-click="" aria-label="deletelayer" type="submit" class="md-raised md-small" layout="column">
+                        <md-icon md-svg-icon="action:ic_exit_to_app_24px" aria-label="Add Point" flex="12"></md-icon>
+                    </md-button>
+                </md-content>
+
+            </div>
+
+
             <md-divider></md-divider>
             <md-subheader  class="md-no-sticky">Operations</md-subheader>
             <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showBufferWindow()">
