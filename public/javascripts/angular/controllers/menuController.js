@@ -61,8 +61,11 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
         angular.extend($scope, {
             center: {
-                autoDiscover: true,
-                zoom: 12
+                trondheim: {
+                    lat: 63.446827,
+                    lng: 10.421906,
+                    zoom: 12
+                }
             },
             defaults: {
                 scrollWheelZoom: true
