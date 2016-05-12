@@ -271,7 +271,8 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 opacity: 0.65
             };
             $scope.loading = true;
-            layerService.getLayer('/api/layer/' + dbname)
+            var db = {dbname: dbname};
+            layerService.getLayer('/api/layer/'+dbname)
                 .success(function (data) {
                     console.log(data);
                     leafletData.getMap().then(function (map) {

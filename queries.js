@@ -12,7 +12,8 @@ var options = {
 
 var pgp = require('pg-promise')(options);
 console.log(process.env.DATABASE_URL);
-var connectionString = process.env.DATABASE_URL || 'postgres://localhost:5432/AnneSofie';
+//var connectionString = process.env.DATABASE_URL || 'postgres://localhost:5432/AnneSofie';
+var connectionString = 'postgres://localhost:5432/AnneSofie';
 var cn = {
     host: 'ec2-184-73-216-242.compute-1.amazonaws.com',
     port: 5432,
@@ -22,13 +23,25 @@ var cn = {
     ssl: true
 
 };
-var db = pgp(cn);
-//var db = pgp(connectionString);
+//var db = pgp(cn);
+var db = pgp(connectionString);
 
 // add query functions
 
+// Helper for linking to external query files:
+function sql(file) {
+    return new pgp.QueryFile(file, {minify: true});
+}
+
+// Create QueryFile globally, once per file:
+var sqlGetAllLayers = sql('./sql/getAllLayers.sql');
+var sqlAddLayer = sql('./sql/addLayer.sql');
+var sqlgetLayer = sql('./sql/getLayer.sql');
+
+
 function getLayernames(req, res) {
-    db.any("SELECT * FROM layers")
+
+    db.any(sqlGetAllLayers)
         .then(function(data) {
             res.status(200)
                 .json({
@@ -38,13 +51,15 @@ function getLayernames(req, res) {
                 });
         })
         .catch(function (err) {
+            if (error instanceof pgp.errors.QueryFileError) {
+                // => the error is related to our QueryFile
+                console.log('There is a problem with the queryfile');
+            }
             return res.status(400).json(err);
         });
 }
 function addLayer(req, res) {
-    console.log(req.body);
-    db.none("INSERT INTO layers (layername, dbname, datatype) " +
-        " VALUES (${layername}, ${dbname}, ${datatype})", req.body)
+    db.none(sqlAddLayer, req.body)
         .then(function (data) {
             res.status(200)
                 .json({
@@ -53,6 +68,10 @@ function addLayer(req, res) {
                 });
         })
         .catch(function (err) {
+            if (error instanceof pgp.errors.QueryFileError) {
+                // => the error is related to our QueryFile
+                console.log('There is a problem with the queryfile');
+            }
             return res.status(400).json({
                 status: 'failes',
                 message: JSON.stringify(err)
@@ -60,9 +79,9 @@ function addLayer(req, res) {
         });
 }
 function getAllFromTable(req, res) {
-    var dbname = req.params.dbname;
-    db.any("SELECT row_to_json(fc) FROM (SELECT 'FeatureCollection' As type, array_to_json(array_agg(f)) As features FROM (SELECT 'Feature' As type, ST_AsGeoJSON(lg.geom)::json As geometry, row_to_json((SELECT l FROM (SELECT gid) As l)) As properties FROM "+dbname+" As lg   ) As f )  As fc;")
-        .then(function (data) {
+    console.log(req.params.dbname);
+    db.any(sqlgetLayer, {table: req.params.dbname})
+        .then(function(data){
             res.status(200)
                 .json({
                     status: 'success',
@@ -71,6 +90,7 @@ function getAllFromTable(req, res) {
                 });
         })
         .catch(function (err) {
+
             return res.status(400).json(err);
         });
 }
