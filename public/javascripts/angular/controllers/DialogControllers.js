@@ -54,9 +54,10 @@ function DialogController_int($scope, $mdDialog, layers) {
         }
     };
 }
-function DialogController_cont($scope, $mdDialog) {
-    $scope.layer_polygon = null;
-    $scope.layer_points = null;
+function DialogController_union($scope, $mdDialog, layers) {
+    $scope.layer1 = null;
+    $scope.layer2 = null;
+    $scope.layers = layers;
 
     $scope.hide = function() {
         $mdDialog.hide();
@@ -65,12 +66,25 @@ function DialogController_cont($scope, $mdDialog) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        var dist = $scope.bufferdist;
-        var layerName = $scope.layer.name;
-        var bufferInfo = [dist, layerName];
-        $mdDialog.hide(bufferInfo);
+        console.log(answer);
+        if (answer == 1) {
+            $scope.layer1.type = 1;
+            $scope.layer1.newname = 'Union ' + $scope.layer1.layername;
+            $scope.layer1.newdbname = 'union_'+$scope.layer1.dbname;
+            $mdDialog.hide($scope.layer1);
+        } else if (answer == 2){
+            $scope.layer1.type = 2;
+            var name1 = $scope.layer1.layername.substr($scope.layer1.layername.indexOf(' '));
+            var name2 = $scope.layer2.layername.substr($scope.layer2.layername.indexOf(' '));
+            var dbname1 = $scope.layer1.dbname.substr($scope.layer1.dbname.indexOf('_'));
+            var dbname2 = $scope.layer2.dbname.substr($scope.layer2.dbname.indexOf('_'));
+            $scope.layer1.newname = 'Union' + name1 + name2;
+            $scope.layer1.newdbname = 'union'+dbname1+dbname2;
+            $scope.layer1.dbname_b = $scope.layer2.dbname;
+            $mdDialog.hide($scope.layer1);
+        }
+
     };
-    $scope.layers = $scope.layers || [ { id:2, name: 'Pub'}, { id: 3, name: 'Birkebeinerroute'}, {id:4, name: 'Restaurants'}, {id: 5, name: 'Innbyggertall'}, {id: 5, name: 'Trafikkmengde'}];
 }
 function DialogController_removelayer($scope, $mdDialog, layers) {
 
@@ -121,51 +135,4 @@ function DialogController_success($scope, $mdDialog, $timeout) {
     };
     $timeout($mdDialog.hide, 120);
 
-}
-
-function getPointLayers(pointLayerService, layer, layers) {
-    pointLayerService.getPointLayers().then(function (response) {
-        for(var key in response.data){
-            if(response.data.hasOwnProperty(key)){
-                console.log(key);
-                layer = { name: response.data[key].name, tileURL: response.data[key].tileURL, datatype: response.data[key].datatype, tablename: response.data[key].tablename};
-                layers.push(layer);
-            }
-        }
-    }, function (response) {
-        //Error
-    });
-}
-function getLineLayers(lineLayerService, layer, layers){
-    lineLayerService.getLineLayers().then(function (response) {
-        for(var key in response.data){
-            if(response.data.hasOwnProperty(key)){
-                console.log(key);
-                layer = { name: response.data[key].name, tileURL: response.data[key].tileURL, datatype: response.data[key].datatype, tablename: response.data[key].tablename};
-                layers.push(layer);
-            }
-        }
-    }, function(response) {
-        //Error
-    });
-}
-function getPolygonLayers(polygonLayerService, layer, layers) {
-    polygonLayerService.getPolyLayers().then(function (response) {
-        for (var key in response.data) {
-            if (response.data.hasOwnProperty(key)) {
-                layer = {
-                    name: response.data[key].name,
-                    dist: response.data[key].dist,
-                    tileURL: response.data[key].tileURL,
-                    datatype: 'Polygon',
-                    tablename: response.data[key].tablename
-                };
-                //console.log(JSON.stringify(layer) + ' = layer in getPolygonlayer in intersection');
-                layers.push(layer);
-            }
-        }
-    }, function (response) {
-        console.log(response + ', failed to load polygons');
-        //Error
-    });
 }

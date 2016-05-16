@@ -144,12 +144,16 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         });
 
         // ----- Map layers active on the map
-        $scope.activeLayer = null;
+
+        $scope.activeLayer = true;
         $scope.activeLayers = []; //Layers on the map
+
+
         $scope.expandActiveLayers = false;
         $scope.showEditMenu = false;
 
-        $scope.setExpandLayerBool = function() { //Show list of active layers
+        //Show list of active layers
+        $scope.setExpandLayerBool = function() {
             if($scope.expandActiveLayers) {
                 $scope.expandActiveLayers = false;
                 //$scope.showEditMenu = false;
@@ -158,13 +162,16 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             }
         };
 
+        //  -- Edit layer handlers
+        $scope.hiddenlayer = false;
         $scope.chosenActiveLayer=null;
         $scope.setEditMenuBool = function(layer) { //Show edit layer menu
             if($scope.chosenActiveLayer){
                 $scope.chosenActiveLayer.obj.setStyle({ //Old active layer
-                    "opacity": 0.65
+                    "opacity": 0.65,
+                    "color": '#808080'
                 });
-
+                $scope.hiddenlayer = false;
             }
             if(layer == 0){
                 $scope.showEditMenu = false;
@@ -178,7 +185,8 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         };
         function highlightChosenActive(layer){
                 layer.setStyle({
-                    "opacity": 1
+                    "opacity": 1,
+                    "color": '#000'
                 })
         }
 
@@ -189,12 +197,26 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.changeLayerColor = function() {
             console.log($scope.activeLayer);
             $scope.chosenActiveLayer.obj.setStyle({
-                color: $scope.hexPicker.color,
                 fillColor: $scope.hexPicker.color
             })
         };
         $scope.bringToFront = function() {
             $scope.chosenActiveLayer.obj.bringToFront();
+        };
+        $scope.hideLayer = function() {
+            if ($scope.chosenActiveLayer.visible) {
+                $scope.chosenActiveLayer.visible = false;
+                $scope.hiddenlayer = true;
+                leafletData.getMap().then(function (map) {
+                    map.removeLayer($scope.chosenActiveLayer.obj);
+                });
+            } else if(!$scope.chosenActiveLayer.visible) {
+                leafletData.getMap().then(function (map) {
+                    map.addLayer($scope.chosenActiveLayer.obj);
+                });
+                $scope.chosenActiveLayer.visible = true;
+                $scope.hiddenlayer = false;
+            }
         };
         $scope.removeLayer = function () {
             leafletData.getMap().then(function (map) {
@@ -207,6 +229,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         };
 
 
+        //  -- Layer operations handlers
         $scope.getLayerInfo = function (layer) {
             var dbname = layer.dbname;
             for (lay in $scope.activeLayers){
@@ -219,14 +242,12 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             $scope.addLayerToMap(dbname, layer.layername, layer.datatype);
         };
         $scope.newBufferLayer = function (layer) {
-            console.log(layer);
             $scope.loading = true;
             var newlayer = {newname: layer.newname, dbname: layer.dbname, buffdist: layer.buffdist, newdbname: layer.newdbname};
             var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
-            console.log(layerinfo);
             layerService.postLayer('/api/layer/buffer/', newlayer)
                 .success(function(data) {
-                    console.log(' added ');
+                    console.log(data);
                     layerService.postLayer('/api/layer/new', layerinfo);
                     $scope.addLayerToMap(layer.newdbname,  layer.newname, 'Polygon');
                 })
@@ -247,7 +268,43 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     console.log(' added intersection layer');
                 }, function(response) {
                     //error
+                    $scope.loading = false;
                     console.log(response);
+                });
+
+        };
+        $scope.newUnionLayer = function(layer) {
+            $scope.loading = true;
+            var newlayer = {dbname: layer.dbname, newdbname: layer.newdbname};
+            var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
+
+            layerService.postLayer('/api/layer/unionlayer/oneinput/', newlayer)
+                .success(function(data) {
+                    console.log(data);
+                    layerService.postLayer('/api/layer/new', layerinfo);
+                    $scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
+                })
+                .error(function(error) {
+                    $scope.loading = false;
+                    console.log(error);
+                });
+
+        };
+        $scope.newUnionLayerFromTwoLayers = function(layer) {
+            $scope.loading = true;
+            var newlayer = {dbname_a: layer.dbname, dbname_b: layer.dbname_b, newdbname: layer.newdbname};
+            var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
+
+            console.log(layer);
+            layerService.postLayer('/api/layer/unionlayer/twoinput/', newlayer)
+                .success(function(data) {
+                    console.log(data);
+                    layerService.postLayer('/api/layer/new', layerinfo);
+                    $scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
+                })
+                .error(function(error) {
+                    $scope.loading = false;
+                    console.log(error);
                 });
 
         };
@@ -256,19 +313,19 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             var geojsonMarkerOptions = {  //Circles instead of markers on point-layers
                 radius: 2,
                 fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),  //Add random color to the layer
-                color: "#000",
+                color: "#808080",
                 weight: 1,
                 opacity: 0.65,
                 fillOpacity: 0.8
             };
             var myStyle = {
-                color: '#' + Math.floor(Math.random() * 16777215).toString(16),  //Add random color to the layer
-                fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
-                weight: 6,
-                opacity: 0.65
+                color: '#808080',
+                fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16), //Add random color to the layer
+                weight: 2,
+                opacity: 0.65,
+                fillOpacity: 0.8
             };
             $scope.loading = true;
-            var db = {dbname: dbname};
             layerService.getLayer('/api/layer/'+dbname)
                 .success(function (data) {
                     console.log(data);
@@ -292,7 +349,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                         //geolay.on('click', highlightFeature);
                         geolay.addTo(map);
                         console.log(geolay);
-                        var activelay = {name: name, obj: geolay};
+                        var activelay = {name: name, visible: true, obj: geolay};
                         $scope.activeLayers.push(activelay);
 
                         //Stop loading icon, show success window
@@ -302,7 +359,8 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
                 })
                 .error(function (error) {
-                    console.log('Error: ' + error);
+                    $scope.loading = false;
+                    console.log(error);
                 });
 
 
@@ -431,17 +489,23 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     $scope.alert = 'You cancelled the dialog.';
                 });
         };
-        $scope.showContainsWindow = function (ev) {
+        $scope.showUnionWindow = function (ev) {
             $mdDialog.show({
-                    controller: DialogController_cont,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"> <form name="intersect"> <h3>Intersection settings</h3> <div layout layout-sm="column"><br><md-select placeholder="Choose layer" ng-model="layer_1" md-on-open="" style="margin-right: 5%;"> <md-option ng-value="layer_1" ng-repeat="layer_1 in layers">{{layer_1.name}}</md-option> </md-select><md-select placeholder="Choose layer" ng-model="layer_2" md-on-open=""> <md-option ng-value="layer_2" ng-repeat="layer_2 in layers">{{layer_2.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"> <md-input-container flex> <label>Buffer distance [m]</label> <input ng-model="bufferdist"> </md-input-container> <div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Find intersection</md-button> </div></md-dialog>',
+                    controller: DialogController_union,
+                    templateUrl: 'views/union.tmpl.html',
                     targetEvent: ev,
-                    clickOutsideToClose: true
+                    clickOutsideToClose: true,
+                    locals: {
+                        layers: $scope.layers
+                    }
                 })
                 .then(function (answer) {
-                    console.log(answer[0] + ' 0 and 1 ' + answer[1]);
-                    $scope.alert = 'You said the information was "' + answer + '".';
-
+                    console.log(answer);
+                    if (answer.type == 1){
+                        $scope.newUnionLayer(answer);
+                    } else if(answer.type == 2) {
+                        $scope.newUnionLayerFromTwoLayers(answer);
+                    }
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
                 });

@@ -15,14 +15,16 @@
                 <md-icon md-svg-icon="maps:ic_layers_24px" aria-label="Add Polygon" flex="12"></md-icon>
                 <md-select placeholder="Add a layer" name="layerChoice" ng-model="layer" md-on-open="loadLayers()" flex="60" md-on-close="">
                     <i>Point layers</i>
-                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.layername}}</a></md-option>
+                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Point', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
                     <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no point layers in the database!</i></p>
                     <i>Line layers</i>
-                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.layername}}</a></md-option>
+                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Line', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
                     <p ng-show="(layers | filter:{datatype: 'Line'}).length == 0"><i>There are no line layers in the database!</i></p>
                     <i>Polygon layers</i>
-                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
+                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Polygon', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
                     <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no polygon layers in the database!</i></p>
+                    <i>Unified layers</i>
+                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {layername: 'Union'}"><a>{{layer.layername}}</a></md-option>
                 </md-select>
                 <div flex="15">
                 </div>
@@ -35,7 +37,7 @@
                     <span class="md-body-2">Edit active layers</span>
                 </div>
             </md-list-item>
-            <div ng-show="expandActiveLayers" style="padding-left: 20%;">
+            <div class="medium-padding-left" ng-show="expandActiveLayers">
                     <md-tooltip md-direction="right">Click here to edit the active layer</md-tooltip>
                     <div flex="15"> </div>
                 <p ng-show="(activeLayers).length == 0"><i>There are no active layers on the map</i></p>
@@ -47,7 +49,6 @@
                             Close Edit Menu
                         </md-radio-button>
                     </md-radio-group>
-
             </div>
             <div ng-show="showEditMenu">
                 <md-divider></md-divider>
@@ -62,13 +63,19 @@
                     </form>
                 </md-content>
                 <md-content layout-padding layout="row"  layout-align="start end">
-                <label class="md-margin md-color">Bring to front</label>
-                <md-button aria-label="movelayer" type="submit" class="md-raised md-small" layout="column" ng-click="bringToFront()">
-                    <md-icon md-svg-icon="navigation:ic_arrow_upward_24px" aria-label="movelayer"></md-icon>
-                </md-button>
-            </md-content>
+                    <label class="md-color small-padding-left small-margin-bottom">Hide layer</label>
+                    <div class="md-margin-left">
+                        <md-checkbox ng-model="hiddenlayer" aria-label="Hide layer" ng-click="hideLayer()"></md-checkbox>
+                    </div>
+                </md-content>
                 <md-content layout-padding layout="row"  layout-align="start end">
-                    <label class="md-margin md-color">Remove layer</label>
+                    <label class="md-margin-right md-color">Bring to front</label>
+                    <md-button aria-label="movelayer" type="submit" class="md-raised md-small" layout="column" ng-click="bringToFront()">
+                        <md-icon md-svg-icon="navigation:ic_arrow_upward_24px" aria-label="movelayer"></md-icon>
+                    </md-button>
+                </md-content>
+                <md-content layout-padding layout="row"  layout-align="start end">
+                    <label class="md-margin-right md-color">Remove layer</label>
                     <md-button aria-label="deletelayer" type="submit" class="md-raised md-small" layout="column" ng-click="removeLayer()">
                         <md-icon md-svg-icon="action:ic_delete_24px" aria-label="Remove Point"></md-icon>
                     </md-button>
@@ -82,21 +89,28 @@
                 <md-tooltip md-direction="right">Click here to create buffer</md-tooltip>
                 <md-icon md-svg-icon="av:ic_album_24px" aria-label="Add Point" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
-                    <span class="md-body-2">Create buffer</span>
+                    <span class="md-body-2">Buffer</span>
                 </div>
             </md-list-item>
             <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showIntersectionWindow()">
-                <md-tooltip md-direction="right">Click here to find interection between a town in Norway and a layer</md-tooltip>
+                <md-tooltip md-direction="right">Click here to find interection between two layers</md-tooltip>
                 <md-icon md-svg-icon="editor:ic_multiline_chart_24px" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
-                    <span class="md-body-2">Find intersection</span>
+                    <span class="md-body-2">Intersection</span>
                 </div>
             </md-list-item>
-            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showContainsWindow()">
-                <md-tooltip md-direction="right">Click here to find all the points inside a geographic area</md-tooltip>
-                <md-icon md-svg-icon="editor:ic_multiline_chart_24px" flex="12"></md-icon>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showUnionWindow()">
+                <md-tooltip md-direction="right">Union on one or two layers</md-tooltip>
+                <md-icon md-svg-icon="./icons/union2.svg" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
                     <span class="md-body-2">Union</span>
+                </div>
+            </md-list-item>
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="">
+                <md-tooltip md-direction="right">Dissolve to layers</md-tooltip>
+                <md-icon md-svg-icon="./icons/dissolve.svg" flex="12"></md-icon>
+                <div class="md-list-item-text" flex="60">
+                    <span class="md-body-2">Dissolve</span>
                 </div>
             </md-list-item>
             <md-divider></md-divider>

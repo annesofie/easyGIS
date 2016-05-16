@@ -1,0 +1,54 @@
+<md-dialog aria-label="Form" class="medium-window">
+        <md-tabs class="md-min-height">
+            <md-tab label="Union one layer">
+                    <md-content class="small-padding">
+                        <form name="union"><h3>Union settings</h3>
+                            <br>
+                            <p><i>Unify one layer</i></p>
+                            <br>
+                            <div layout layout-lg="column">
+                                <md-select placeholder="Choose layer" ng-model="layer1" md-on-open="">
+                                    <i>Point layers</i>
+                                    <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Point', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
+                                    <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no active point layers!</i></p>
+                                    <i>Line layers</i>
+                                    <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Line', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
+                                    <p ng-show="(layers | filter:{datatype: 'Line'}).length == 0"><i>There are no active line layers!</i></p>
+                                    <i>Polygon layers</i>
+                                    <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
+                                    <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
+                                </md-select>
+                            </div>
+                            <div class="md-dialog-actions" layout="row"><span flex></span>
+                                <md-button ng-click="cancel()"> Cancel</md-button>
+                                <md-button ng-click="answer(1)" class="md-primary">Create union layer</md-button>
+                            </div>
+                        </form>
+                    </md-content>
+            </md-tab>
+            <md-tab label="Union two layers">
+                    <md-content class="small-padding">
+                        <form name="union"><h3>Union settings</h3>
+                            <p><i>Unify two layers. (Only works on layers thats already been unified)</i></p>
+                            <div layout-lg="column">
+                                <md-select placeholder="Choose layer" ng-model="layer1" md-on-open="">
+                                    <md-option ng-value="layer" ng-repeat="layer in layers | filter: {layername: 'Union'}">{{layer.layername}}</md-option>
+                                    <p ng-show="(layers | filter: {layername: 'Union'}).length == 0"><i>No unified layers available</i></p>
+                                </md-select>
+                            </div>
+                            <br>
+                            <div layout-lg="column">
+                                <md-select placeholder="Choose layer" ng-model="layer2" md-on-open="">
+                                    <md-option ng-value="layer" ng-repeat="layer in layers | filter: {layername: 'Union'}">{{layer.layername}}</md-option>
+                                    <p ng-show="(layers | filter: {layername: 'Union'}).length == 0"><i>No unified layers available</i></p>
+                                </md-select>
+                            </div>
+                            <div class="md-dialog-actions" layout="row"><span flex></span>
+                                <md-button ng-click="cancel()"> Cancel</md-button>
+                                <md-button ng-click="answer(2)" class="md-primary">Create union layer</md-button>
+                            </div>
+                        </form>
+                    </md-content>
+            </md-tab>
+        </md-tabs>
+</md-dialog>

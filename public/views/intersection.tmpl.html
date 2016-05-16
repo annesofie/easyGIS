@@ -1,4 +1,4 @@
-<md-dialog style="min-width: 500px;">
+<md-dialog class="large-window">
     <md-dialog-content>
         <div>
             <md-tabs class="my-tabs" md-center-tabs="false" md-selected="activeTabIndex" md-no-ink="true"
@@ -6,11 +6,10 @@
                 <md-tab>
                     <md-tab-label>Within a city</md-tab-label>
                     <md-tab-body>
-                            <md-content class="md-padding">
+                            <md-content class="md-padding small-padding">
                                 <form name="intersect"><h5>Choose which city and layer you want to intersect</h5>
                                     <div layout layout-sm="column"><br>
-                                        <md-select placeholder="Choose city" ng-model="name" md-on-open=""
-                                                   style="margin-right: 5%;">
+                                        <md-select placeholder="Choose city" ng-model="name" md-on-open="">
                                             <md-option ng-value="name" ng-repeat="name in names | filter:query | orderBy:name"><a>{{name}}</a></md-option>
                                         </md-select>
                                         <md-select placeholder="Choose layer" ng-model="layer" md-on-open="">
@@ -32,11 +31,10 @@
                 <md-tab>
                     <md-tab-label>Withing a bufferlayer</md-tab-label>
                     <md-tab-body>
-                        <md-content class="md-padding">
+                        <md-content class="md-padding small-padding">
                             <form name="intersect"><h5>Choose which layers you want to intersect</h5>
                                 <div layout layout-sm="column"><br>
-                                    <md-select placeholder="Choose a bufferlayer" ng-model="polygonlayer" md-on-open=""
-                                               style="margin-right: 5%;">
+                                    <md-select placeholder="Choose a bufferlayer" ng-model="polygonlayer" md-on-open="">
                                         <md-option ng-value="polygonlayer" ng-repeat="polygonlayer in layers | filter: {layername: 'buff'}:false"><a>{{polygonlayer.layername}}</a></md-option>
                                         <p ng-show="(polygonlayers | filter: {name: 'buff'}:false).length == 0"><i>There are no buffer layers available!</i></p>
                                     </md-select>
@@ -60,7 +58,7 @@
                 <md-tab>
                     <md-tab-label>Within a polygonlayer</md-tab-label>
                     <md-tab-body>
-                        <div class="min-540">
+                        <div class="min-540 small-padding">
                             <md-input-container>
                                 <label>Test input</label>
                                 <input type="text" name="myTestField">

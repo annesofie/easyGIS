@@ -38,6 +38,8 @@ var sqlGetAllLayers = sql('./sql/getAllLayers.sql');
 var sqlAddLayer = sql('./sql/addLayer.sql');
 var sqlgetLayer = sql('./sql/getLayer.sql');
 var sqlcreateaddbufferlayer = sql('./sql/create_and_add_bufferlayer.sql');
+var sqlcreateunionlayer = sql('./sql/create_union_layer.sql');
+var sqlcreateunionlayertwo = sql('./sql/create_union_layer_twoinputs.sql');
 
 function getLayernames(req, res) {
 
@@ -125,30 +127,6 @@ function createBufferLayer(req, res) {
 
             return res.status(400).json(err);
         });
-    //Data from http request
-    /*var name = req.body.newname;
-    var dbname = req.body.dbname;
-    var dist = req.body.buffdist;
-    var newdbname = req.body.newdbname;
-    console.log(dbname + ' = dbname');
-    console.log(dist + ' = dist');
-    console.log('createbufferlayer');
-
-    db.none('CREATE TABLE IF NOT EXISTS '+newdbname+' (gid SERIAL PRIMARY KEY, geom text not null);'+
-        ' INSERT INTO '+newdbname+' (gid, geom) '+
-          ' SELECT row_number() OVER () as gid, ST_AsText(ST_Buffer(ST_GeomFromText('+dbname+'.geom)::geography, '+dist+')::geometry) AS geom FROM '+dbname+';')
-        .then(function (data) {
-            res.status(200)
-                .json({
-                    status: 'success',
-                    message: 'Bufferlayer added to ' + dbname
-                });
-        })
-        .catch(function (err) {
-            return res.status(400).json(err);
-        });*/
-
-
 }
 function createIntersectionWithBuffLayer(req, res) {
     //Data from http requests
@@ -167,6 +145,7 @@ function createIntersectionWithBuffLayer(req, res) {
             res.status(200)
                 .json({
                     status: 'success',
+                    data: data,
                     message: 'Intersectionlayer is added'
                 });
         })
@@ -178,6 +157,38 @@ function createIntersectionWithBuffLayer(req, res) {
             });
         });
 }
+function createUnionLayer(req, res) {
+    console.log(req.body);
+    db.none(sqlcreateunionlayer, req.body)
+        .then(function(data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Added union in new table'
+                });
+        })
+        .catch(function (err) {
+
+            return res.status(400).json(err);
+        });
+}
+function createUnionLayerFromTwoLayers(req, res) {
+    console.log(req.body);
+    db.none(sqlcreateunionlayertwo, req.body)
+        .then(function(data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Added union in new table'
+                });
+        })
+        .catch(function (err) {
+            console.log(err);
+            return res.status(400).json(err);
+        });
+}
 
 module.exports = {
     getLayernames: getLayernames,
@@ -185,5 +196,7 @@ module.exports = {
     getAllFromTable: getAllFromTable,
     createNewTable: createNewTable,
     createBufferLayer: createBufferLayer,
-    createIntersectionWithBuffLayer: createIntersectionWithBuffLayer
+    createIntersectionWithBuffLayer: createIntersectionWithBuffLayer,
+    createUnionLayer: createUnionLayer,
+    createUnionLayerFromTwoLayers: createUnionLayerFromTwoLayers
 };
