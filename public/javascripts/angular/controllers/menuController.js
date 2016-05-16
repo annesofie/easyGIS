@@ -90,11 +90,8 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 lat: map.getBounds()._southWest.lat,
                 long: map.getBounds()._southWest.lng
             };
-            console.log($scope.mapBoundsNorthEast);
-            console.log($scope.mapBoundsSouthWest);
 
             var drawnItems = $scope.controls.draw.edit.featureGroup;
-            console.log(drawnItems + ' drawnItems ');
 
             // Init the map with the saved elements
            /* var printLayers = function () {
@@ -119,7 +116,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     id: layer._leaflet_id,
                     geoJSON: geoJSON
                 });
-                printLayers();
+                //printLayers();
             });
             map.on('draw:edited', function (e) {
                 var layers = e.layers;
@@ -142,7 +139,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                         }
                     }
                 });
-                printLayers();
+                //printLayers();
             });
         });
 

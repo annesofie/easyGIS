@@ -37,7 +37,7 @@ function sql(file) {
 var sqlGetAllLayers = sql('./sql/getAllLayers.sql');
 var sqlAddLayer = sql('./sql/addLayer.sql');
 var sqlgetLayer = sql('./sql/getLayer.sql');
-
+var sqlcreateaddbufferlayer = sql('./sql/create_and_add_bufferlayer.sql');
 
 function getLayernames(req, res) {
 
@@ -111,8 +111,22 @@ function createNewTable(req, res) {
         });
 }
 function createBufferLayer(req, res) {
+    console.log(req.body);
+    db.none(sqlcreateaddbufferlayer, req.body)
+        .then(function(data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Added bufferlayer in new table'
+                });
+        })
+        .catch(function (err) {
+
+            return res.status(400).json(err);
+        });
     //Data from http request
-    var name = req.body.newname;
+    /*var name = req.body.newname;
     var dbname = req.body.dbname;
     var dist = req.body.buffdist;
     var newdbname = req.body.newdbname;
@@ -132,7 +146,9 @@ function createBufferLayer(req, res) {
         })
         .catch(function (err) {
             return res.status(400).json(err);
-        });
+        });*/
+
+
 }
 function createIntersectionWithBuffLayer(req, res) {
     //Data from http requests
