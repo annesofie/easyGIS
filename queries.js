@@ -40,6 +40,7 @@ var sqlgetLayer = sql('./sql/getLayer.sql');
 var sqlcreateaddbufferlayer = sql('./sql/create_and_add_bufferlayer.sql');
 var sqlcreateunionlayer = sql('./sql/create_union_layer.sql');
 var sqlcreateunionlayertwo = sql('./sql/create_union_layer_twoinputs.sql');
+var sqladdgeojsonlayer = sql('./sql/addGeojsonLayer.sql');
 
 function getLayernames(req, res) {
 
@@ -189,6 +190,22 @@ function createUnionLayerFromTwoLayers(req, res) {
             return res.status(400).json(err);
         });
 }
+function createtableandaddgeojsonlayer(req, res) {
+    console.log(req.body);
+    db.none(sqladdgeojsonlayer, req.body)
+        .then(function(data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Added geosjonlayer in new table'
+                });
+        })
+        .catch(function (err) {
+            console.log(err);
+            return res.status(400).json(err);
+        });
+}
 
 module.exports = {
     getLayernames: getLayernames,
@@ -198,5 +215,6 @@ module.exports = {
     createBufferLayer: createBufferLayer,
     createIntersectionWithBuffLayer: createIntersectionWithBuffLayer,
     createUnionLayer: createUnionLayer,
-    createUnionLayerFromTwoLayers: createUnionLayerFromTwoLayers
+    createUnionLayerFromTwoLayers: createUnionLayerFromTwoLayers,
+    createtableandaddgeojsonlayer: createtableandaddgeojsonlayer
 };

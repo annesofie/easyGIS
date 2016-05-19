@@ -86,6 +86,46 @@ function DialogController_union($scope, $mdDialog, layers) {
 
     };
 }
+function DialogControllerUploadFile($scope, $mdDialog, UploadService) {
+
+    $scope.file = null;
+    var fileData;
+    //File upload functions, used with ng-file-upload
+    /*$scope.$watch('file', function () {
+        console.log($scope.file);
+        if ($scope.file != null) {
+            console.log($scope.file);
+            UploadService.handleFile($scope.file).then(function (data) {
+                fileData = data;
+                console.log(data);
+                fileData.forEach(function (collection) {
+
+                    var name = collection.fileName;
+                    if (name === undefined || name === null) {
+                        name = "1234"
+                    }
+                    // Add a layer for each
+                    console.log(collection);
+                });
+            });
+        }
+    });*/
+    $scope.hide = function() {
+        $mdDialog.hide();
+    };
+    $scope.cancel = function() {
+        $mdDialog.cancel();
+    };
+    $scope.answer = function(answer) {
+        if ($scope.file != null) {
+            console.log($scope.file);
+            UploadService.handleFile($scope.file).then(function (data) {
+                console.log(data);
+                $mdDialog.hide(data);
+            });
+        }
+    };
+}
 function DialogController_removelayer($scope, $mdDialog, layers) {
 
     $scope.activelayer = null;

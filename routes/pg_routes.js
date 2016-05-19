@@ -15,6 +15,7 @@ router.post('/api/layer/buffer/', db.createBufferLayer);
 router.post('/api/layer/intersection/', db.createIntersectionWithBuffLayer);
 router.post('/api/layer/unionlayer/oneinput/', db.createUnionLayer);
 router.post('/api/layer/unionlayer/twoinput/', db.createUnionLayerFromTwoLayers);
+router.post('/api/layer/newgeojson/', db.createtableandaddgeojsonlayer);
 
 
 router.post('/api/layer/:dbname', db.createNewTable);

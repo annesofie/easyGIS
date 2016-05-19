@@ -2,8 +2,8 @@
  * Created by AnneSofie on 14.02.2016.
  */
 
-easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'polygonLayerService', 'pointLayerService', 'lineLayerService', 'geoJsonService', 'layerService','$http',
-    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData, polygonLayerService, pointLayerService, lineLayerService, geoJsonService, layerService, $http) {
+easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'polygonLayerService', 'pointLayerService', 'lineLayerService', 'geoJsonService', 'layerService','UploadService',
+    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData, polygonLayerService, pointLayerService, lineLayerService, geoJsonService, layerService, UploadService) {
 
         // Toolbar search toggle
         $scope.toggleSearch = function (element) {
@@ -387,39 +387,22 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             });
         };
 
-        // Add new layer inn database
-        $scope.addnewlayer = function (name, dist, tileurl, type, dbname) {
-            if (type == 'Polygon') {
-                $scope.loading = true;
-                polygonLayerService.addpolygonlayer(name, dist, tileurl, dbname).then(function (response) {
-                    console.log('success, response: ' + JSON.stringify(response));
+        // ** Upload new file
+        $scope.addDataToDB = function(file) {
+
+            console.log(JSON.stringify(file.features));
+            var newlayer = {newdbname: 'hei', geojsonbody: JSON.stringify(file.features)};
+            layerService.postLayerJson('/api/layer/newgeojson/', newlayer)
+                .success(function(data) {
+                    console.log(data);
+                    layerService.postLayer('/api/layer/new', layerinfo); //Add to available layers list
+                    //$scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
+                })
+                .error(function(error) {
                     $scope.loading = false;
-                    $scope.showSuccessWindow();
-                }, function () {
-                    console.log('adding failed');
-                    $scope.loading = false;
+                    console.log(error);
                 });
-            } else if (type == 'Point') {
-                $scope.loading = true;
-                pointLayerService.addPointLayer(name, tileurl, dbname).then(function (response) {
-                    console.log('success, response: ' + JSON.stringify(response));
-                    $scope.loading = false;
-                    $scope.showSuccessWindow();
-                }, function () {
-                    console.log('adding failed');
-                    $scope.loading = false;
-                });
-            } else if (type == 'Line') {
-                $scope.loading = true;
-                lineLayerService.addLineLayer(name, tileurl, dbname).then(function (response) {
-                    console.log('success, response: ' + JSON.stringify(response));
-                    $scope.loading = false;
-                    $scope.showSuccessWindow();
-                }, function () {
-                    console.log('adding failed');
-                    $scope.loading = false;
-                });
-            }
+
         };
 
 
@@ -449,9 +432,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 layer.bringToFront();
             }
         }
-
-        // ** Help functions to get/add layers from/to database
-
 
         // ** Left menu, open new window:
 
@@ -593,15 +573,16 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             });
         };
 
-        $scope.showAdd = function (ev) {
+        //File upload
+        $scope.fileUploadToDB = function (ev) {
             $mdDialog.show({
-                    controller: DialogControllerBuff,
+                    controller: DialogControllerUploadFile,
                     templateUrl: 'views/fileupload.tmpl.html',
                     targetEvent: ev,
                     clickOutsideToClose: true
                 })
                 .then(function (answer) {
-                    $scope.alert = 'You said the information was "' + answer + '".';
+                    $scope.addDataToDB(answer);
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
                 });

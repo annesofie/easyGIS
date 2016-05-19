@@ -1,22 +1,20 @@
 <md-dialog aria-label="Form">
     <md-content class="md-padding">
         <form name="fileimport">
-            <div ng-app="easygis" ng-controller="importFileController">
                 <div layout="row">
-                    <div ngf-drop ngf-select ng-model="files" class="drop-box" id="dropbox" ngf-drag-over-class="'dragover'" ngf-allow-dir="true">
+                    <div ngf-drop ngf-select ng-model="file" class="drop-box" id="dropbox"  ngf-drag-over-class="dragover" ngf-allow-dir="true">
                         <h4 style="align-self: center">Drop your file here</h4>
                     </div>
                     <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
                 </div>
                 <div layout="row">
-                    {{ file }}
+                    {{file.name}}
                 </div>
-            </div>
         </form>
     </md-content>
     <div class="md-dialog-actions" layout="row">
         <span flex></span>
-        <md-button ng-click="answer()"> Cancel
+        <md-button ng-click="cancel()"> Cancel
         </md-button>
         <md-button id="uploadFileBtn" ng-click="answer()" class="md-primary"> Import file
         </md-button>

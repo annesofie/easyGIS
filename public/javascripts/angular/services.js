@@ -108,9 +108,8 @@ easygis.factory('layerService', ['$http', function($http){
 
 }]);
 
-/*easygis.factory('Upload', ['$q', function(){
+easygis.factory('UploadService', ['$q', function($q){
     var reader = new FileReader();
-    var geoJsonData = new ol.format.GeoJSON();
 
     return ({
         handleFile: handleFile
@@ -118,12 +117,32 @@ easygis.factory('layerService', ['$http', function($http){
 
     function handleFile(file){
         var name = file.name;
-        if(name.endsWith('.zip')){
+        if (name.endsWith('.geojson')){
+            return handleGeoJson(file);
+        }else if(name.endsWith('.zip')){
             return handleZip(file);
         }else if (name.endsWith('.sos')){
             return handleSosi(file);
         }
     }
+
+    function handleGeoJson(file) {
+        var deferred = $q.defer();
+        reader.onload = function(e) {
+            //When the reader is done reading
+            console.log(e.target);
+            try {
+                json = JSON.parse(e.target.result);
+            } catch (ex) {
+                alert('ex when trying to parse json = ' + ex);
+            }
+            console.log(JSON.parse(e.target.result));
+            deferred.resolve(JSON.parse(e.target.result));
+        };
+        reader.readAsText(file);
+        return deferred.promise;
+    }
+
     function handleSosi(file){
         var deferred = $q.defer();
         //Create a parser
@@ -150,4 +169,4 @@ easygis.factory('layerService', ['$http', function($http){
         return deferred.promise;
     }
 
-}]);*/
+}]);
