@@ -24,12 +24,16 @@
                                             <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
                                         </md-select>
                                     </div>
+                                    <div class="md-dialog-actions" layout="row"><span flex></span>
+                                        <md-button ng-click="cancel()"> Cancel</md-button>
+                                        <md-button ng-click="answer(0)" class="md-primary">Create within layer</md-button>
+                                    </div>
                                 </form>
                             </md-content>
                     </md-tab-body>
                 </md-tab>
                 <md-tab>
-                    <md-tab-label>Withing a bufferlayer</md-tab-label>
+                    <md-tab-label>Within a bufferlayer</md-tab-label>
                     <md-tab-body>
                         <md-content class="md-padding small-padding">
                             <form name="intersect"><h5>Choose which layers you want to intersect</h5>
@@ -49,6 +53,14 @@
                                         <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
                                         <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no polygon layers in the database!</i></p>
                                     </md-select>
+                                    <md-input-container>
+                                        <label>New layername</label>
+                                        <input ng-model="layername">
+                                    </md-input-container>
+                                </div>
+                                <div class="md-dialog-actions" layout="row"><span flex></span>
+                                    <md-button ng-click="cancel()"> Cancel</md-button>
+                                    <md-button ng-click="answer(1)" class="md-primary">Create within layer</md-button>
                                 </div>
                             </form>
                         </md-content>
@@ -69,11 +81,4 @@
             </md-tabs>
         </div>
     </md-dialog-content>
-    <md-dialog-actions>
-        <span flex></span>
-        <md-button ng-click="cancel()">
-            Cancel
-        </md-button>
-        <md-button ng-click="answer()" class="md-primary">Find intersection</md-button>
-    </md-dialog-actions>
 </md-dialog>

@@ -19,6 +19,10 @@
                                     <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
                                 </md-select>
                             </div>
+                            <md-input-container>
+                                <label>New layername</label>
+                                <input ng-model="layername">
+                            </md-input-container>
                             <div class="md-dialog-actions" layout="row"><span flex></span>
                                 <md-button ng-click="cancel()"> Cancel</md-button>
                                 <md-button ng-click="answer(1)" class="md-primary">Create union layer</md-button>
@@ -43,6 +47,10 @@
                                     <p ng-show="(layers | filter: {layername: 'Union'}).length == 0"><i>No unified layers available</i></p>
                                 </md-select>
                             </div>
+                            <md-input-container>
+                                <label>New layername</label>
+                                <input ng-model="layername">
+                            </md-input-container>
                             <div class="md-dialog-actions" layout="row"><span flex></span>
                                 <md-button ng-click="cancel()"> Cancel</md-button>
                                 <md-button ng-click="answer(2)" class="md-primary">Create union layer</md-button>

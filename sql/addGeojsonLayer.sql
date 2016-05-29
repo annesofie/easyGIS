@@ -1,13 +1,12 @@
 
-CREATE TABLE IF NOT EXISTS ${newdbname~} (gid SERIAL PRIMARY KEY, geom text not null);
-INSERT INTO ${newdbname~} (gid, geom)
+INSERT INTO ${newdbname~} (geom, properties)
 	WITH data AS (SELECT
-        ${geojsonbody~}
+	 ${geojsonbody}
 	::json as fc)
 	SELECT
-	   row_number() OVER () as gid,
-	   ST_AsText(ST_GeomFromGeoJson(feat->>'geometry')) AS geom
+	   ST_AsText(ST_GeomFromGeoJson(feat->>'geometry')) AS geom,
+	   feat->'properties' AS properties
 	FROM (
-	    SELECT json_array_elements(fc->'features') AS feat
+	    SELECT fc AS feat
 	    FROM data
-) AS fsa
+) AS fsa;

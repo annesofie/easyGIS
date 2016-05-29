@@ -258,18 +258,20 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.newIntersectionLayer = function(layer){
             console.log(layer);
             $scope.loading = true;
-            var newlayer = {newname: layer.newname, a_dbname: layer.dbname, b_dbname: layer.b_dbname, newdbname: layer.newdbname};
+            var newlayer = {a_dbname: layer.dbname, b_dbname: layer.b_dbname, newdbname: layer.newdbname};
             var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
             console.log(newlayer);
             console.log(layerinfo);
-            layerService.postLayer('/api/layer/intersection/', newlayer)
-                .then(function(response){
-                    $scope.loading = false;
-                    console.log(' added intersection layer');
-                }, function(response) {
+            layerService.postLayer('/api/layer/within/', newlayer)
+                .success(function(response){
+                    console.log(response);
+                    layerService.postLayer('/api/layer/new', layerinfo);
+                    $scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
+                })
+                .error(function(error) {
                     //error
                     $scope.loading = false;
-                    console.log(response);
+                    console.log(error);
                 });
 
         };
@@ -308,10 +310,10 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 });
 
         };
+        var layersIntheMap = [];
         $scope.addLayerToMap = function (dbname, name, datatype) {
-
             var geojsonMarkerOptions = {  //Circles instead of markers on point-layers
-                radius: 2,
+                radius: 3,
                 fillColor: '#' + Math.floor(Math.random() * 16777215).toString(16),  //Add random color to the layer
                 color: "#808080",
                 weight: 1,
@@ -326,53 +328,51 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 fillOpacity: 0.8
             };
             $scope.loading = true;
-            layerService.getLayer('/api/layer/'+dbname)
-                .success(function (data) {
-                    console.log(data);
-                    leafletData.getMap().then(function (map) {
-                        console.log(map);
+            if(layersIntheMap.length > 0 && layersIntheMap.indexOf(name) >= 0){ //Check if layer already in the map
+                //do not add layer to the map
+                console.log('layer already on the map');
+                $scope.loading = false;
+            } else {
+                layerService.getLayer('/api/layer/'+dbname)
+                    .success(function (data) {
+                        console.log(data);
+                        leafletData.getMap().then(function (map) {
+                            console.log(map);
 
-                        var features = data.data[0].row_to_json.features;
-                        var geolay = L.geoJson(features, {
-                            style: myStyle,
-                            pointToLayer: function (feature, latlng) {
-                                return L.circleMarker(latlng, geojsonMarkerOptions);
-                            },
-                            onEachFeature: function (feature, lay) {
-                                feature.properties.datatype = datatype;
-                                lay.bindPopup(name);
-                                if (feature.properties.komm_navn) {
-                                    lay.bindPopup(feature.properties.komm_navn);
+                            var features = data.data[0].row_to_json.features;
+                            var geolay = L.geoJson(features, {
+                                style: myStyle,
+                                pointToLayer: function (feature, latlng) {
+                                    return L.circleMarker(latlng, geojsonMarkerOptions);
+                                },
+                                onEachFeature: function (feature, lay) {
+                                    feature.properties.datatype = datatype;
+                                    console.log(feature.properties);
+                                    lay.bindPopup(name);
+                                    if (feature.properties.tourism) {
+                                        lay.bindPopup(feature.properties.tourism);
+                                    } else if (feature.properties.komm_navn) {
+                                        lay.bindPopup(feature.properties.komm_navn);
+                                    }
                                 }
-                            }
+                            });
+                            //geolay.on('click', highlightFeature);
+                            geolay.addTo(map);
+                            console.log(geolay);
+                            var activelay = {name: name, visible: true, obj: geolay};
+                            $scope.activeLayers.push(activelay);
+                            layersIntheMap.push(name);
+                            //Stop loading icon, show success window
+                            $scope.loading = false;
+                            $scope.showSuccessWindow();
                         });
-                        //geolay.on('click', highlightFeature);
-                        geolay.addTo(map);
-                        console.log(geolay);
-                        var activelay = {name: name, visible: true, obj: geolay};
-                        $scope.activeLayers.push(activelay);
 
-                        //Stop loading icon, show success window
+                    })
+                    .error(function (error) {
                         $scope.loading = false;
-                        $scope.showSuccessWindow();
+                        console.log(error);
                     });
-
-                })
-                .error(function (error) {
-                    $scope.loading = false;
-                    console.log(error);
-                });
-
-
-        };
-        $scope.createIntersectionLayer = function (name, datatype, tablename, param, intername, dist, sqltype) {
-            console.log('createIntersLayer: name = ' + name + ' town = ' + param + ' tablename = ' + tablename + ' datatype: ' + datatype);
-            var layerData = getLayerData(name, param, dist, 'nothing', datatype, tablename, sqltype);
-            $scope.loadIntersectionLayer(layerData, name, param, datatype, tablename, intername);
-        };
-        $scope.loadIntersectionLayer = function (layerData, name, param, datatype, tablename, intername) {
-            console.log(datatype + ' = datatype');
-            $scope.loading = true;
+            }
 
         };
 
@@ -388,15 +388,37 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         };
 
         // ** Upload new file
-        $scope.addDataToDB = function(file) {
-
-            console.log(JSON.stringify(file.features));
-            var newlayer = {newdbname: 'hei', geojsonbody: JSON.stringify(file.features)};
-            layerService.postLayerJson('/api/layer/newgeojson/', newlayer)
+        $scope.addDataToDB = function(layer) {
+            $scope.loading = true;
+            var datatype;
+            var newtable = {newdbname: layer.newdbname};
+            layerService.postLayer('/api/layer/newtable/geomproperties/', newtable)   //Create the new table
                 .success(function(data) {
                     console.log(data);
-                    layerService.postLayer('/api/layer/new', layerinfo); //Add to available layers list
-                    //$scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
+
+                    layer.geojsonbody.features.forEach(function(collection) {
+                        $scope.loading = true;
+                        var newlayer = {newdbname: layer.newdbname, geojsonbody: JSON.stringify(collection)};
+                        layerService.postLayer('/api/layer/newgeojson/', newlayer) // Add geojson data in the table
+                            .success(function(data) {
+                                console.log(data);
+                            })
+                            .error(function(error) {
+                                console.log(error);
+                            });
+
+                        if (datatype && datatype != collection.geometry.type) {
+                            datatype = 'Multi';
+                        } else {
+                            datatype = collection.geometry.type;
+                        }
+                    });
+
+                    var layerinfo = {layername: layer.name, dbname: layer.newdbname, datatype: datatype};
+                    layerService.postLayer('/api/layer/new', layerinfo); // Add table to available layers
+                    $scope.loading = false;
+                    $scope.showSuccessWindow();
+
                 })
                 .error(function(error) {
                     $scope.loading = false;

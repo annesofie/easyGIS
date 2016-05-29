@@ -39,8 +39,10 @@ var sqlAddLayer = sql('./sql/addLayer.sql');
 var sqlgetLayer = sql('./sql/getLayer.sql');
 var sqlcreateaddbufferlayer = sql('./sql/create_and_add_bufferlayer.sql');
 var sqlcreateunionlayer = sql('./sql/create_union_layer.sql');
-var sqlcreateunionlayertwo = sql('./sql/create_union_layer_twoinputs.sql');
+var sqlcreateuniontwolayers = sql('./sql/create_union_layer_twoinputs.sql');
 var sqladdgeojsonlayer = sql('./sql/addGeojsonLayer.sql');
+var sqlcreatewitinlayer = sql('./sql/create_within_layer.sql');
+var sqlcreatetablegeomproperties = sql('./sql/create_table(gid,geom,properties).sql');
 
 function getLayernames(req, res) {
 
@@ -67,13 +69,13 @@ function addLayer(req, res) {
             res.status(200)
                 .json({
                     status: 'success',
-                    message: 'layer is inserted in layers'
+                    message: 'layer is inserted in the layer list'
                 });
         })
         .catch(function (err) {
             if (error instanceof pgp.errors.QueryFileError) {
                 // => the error is related to our QueryFile
-                console.log('There is a problem with the queryfile');
+                console.log(err);
             }
             return res.status(400).json({
                 status: 'failes',
@@ -129,7 +131,7 @@ function createBufferLayer(req, res) {
             return res.status(400).json(err);
         });
 }
-function createIntersectionWithBuffLayer(req, res) {
+/*function createIntersectionWithBuffLayer(req, res) {
     //Data from http requests
     console.log('inside create intersection layer');
     var a_dbname = req.body.a_dbname;
@@ -157,6 +159,23 @@ function createIntersectionWithBuffLayer(req, res) {
                 message: JSON.stringify(err)
             });
         });
+}*/
+function createWithinLayer(req, res) {
+    console.log(req.body);
+    db.none(sqlcreatewitinlayer, req.body)
+        .then(function(data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Added within layer in new table'
+                });
+        })
+        .catch(function (err) {
+            console.log(err);
+            return res.status(400).json(err);
+        });
+
 }
 function createUnionLayer(req, res) {
     console.log(req.body);
@@ -176,7 +195,7 @@ function createUnionLayer(req, res) {
 }
 function createUnionLayerFromTwoLayers(req, res) {
     console.log(req.body);
-    db.none(sqlcreateunionlayertwo, req.body)
+    db.none(sqlcreateuniontwolayers, req.body)
         .then(function(data) {
             res.status(200)
                 .json({
@@ -190,21 +209,38 @@ function createUnionLayerFromTwoLayers(req, res) {
             return res.status(400).json(err);
         });
 }
-function createtableandaddgeojsonlayer(req, res) {
-    console.log(req.body);
-    db.none(sqladdgeojsonlayer, req.body)
+function createtablegeomprop(req, res){
+
+    db.none(sqlcreatetablegeomproperties, req.body)
         .then(function(data) {
             res.status(200)
                 .json({
                     status: 'success',
                     data: data,
-                    message: 'Added geosjonlayer in new table'
+                    message: 'Added union in new table'
                 });
         })
         .catch(function (err) {
             console.log(err);
             return res.status(400).json(err);
         });
+}
+function insertgeojsonlayer(req, res) {
+
+    db.none(sqladdgeojsonlayer, req.body)
+        .then(function (data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Added geosjon in table'
+                });
+        })
+        .catch(function (err) {
+            console.log(err);
+            return res.status(400).json(err);
+        });
+
 }
 
 module.exports = {
@@ -213,8 +249,9 @@ module.exports = {
     getAllFromTable: getAllFromTable,
     createNewTable: createNewTable,
     createBufferLayer: createBufferLayer,
-    createIntersectionWithBuffLayer: createIntersectionWithBuffLayer,
+    createWithinLayer: createWithinLayer,
     createUnionLayer: createUnionLayer,
     createUnionLayerFromTwoLayers: createUnionLayerFromTwoLayers,
-    createtableandaddgeojsonlayer: createtableandaddgeojsonlayer
+    createtablegeomprop: createtablegeomprop,
+    insertgeojsonlayer: insertgeojsonlayer
 };

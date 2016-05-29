@@ -27,6 +27,7 @@ function DialogController_int($scope, $mdDialog, layers) {
     $scope.layer = null;
     $scope.layers = layers;
     $scope.polygonlayer = null;
+    $scope.layername = null;
 
     $scope.hide = function() {
         $mdDialog.hide();
@@ -35,20 +36,19 @@ function DialogController_int($scope, $mdDialog, layers) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        if($scope.name) {
+        if (!$scope.layername) {
+            //Cannot do operation, need a name
+            alert("You have to give the new layer a name");
+        } else if(answer == 0) {
             $scope.layer.intervar= $scope.name;
             $scope.layer.intername = $scope.name;
-            $scope.layer.sqltype = 'inter_city';
             console.log(JSON.stringify($scope.layer) + ' input inter_city');
             $mdDialog.hide($scope.layer);
 
-        } else if ($scope.polygonlayer) {
+        } else if (answer == 1) {
             $scope.layer.b_dbname = $scope.polygonlayer.dbname;
-            var dist = $scope.polygonlayer.layername.substring($scope.polygonlayer.layername.lastIndexOf(" ")+1);
-            var buffname = $scope.polygonlayer.layername.substr(0,$scope.polygonlayer.layername.indexOf(' '));
-            $scope.layer.newname = $scope.layer.layername+' within '+dist+' of '+buffname;
-            $scope.layer.newdbname = $scope.layer.dbname+'_within_'+dist+buffname;
-            $scope.layer.sqltype = 'inter_buff';
+            $scope.layer.newname = $scope.layername;
+            $scope.layer.newdbname = $scope.layername.replace(/\s/g,"_");
             console.log(JSON.stringify($scope.layer) + ' input inter_buff');
             $mdDialog.hide($scope.layer);
         }
@@ -58,6 +58,7 @@ function DialogController_union($scope, $mdDialog, layers) {
     $scope.layer1 = null;
     $scope.layer2 = null;
     $scope.layers = layers;
+    $scope.layername;
 
     $scope.hide = function() {
         $mdDialog.hide();
@@ -67,19 +68,18 @@ function DialogController_union($scope, $mdDialog, layers) {
     };
     $scope.answer = function(answer) {
         console.log(answer);
-        if (answer == 1) {
+        if (!$scope.layername) {
+            //Cannot do operation, need a name
+            alert("You have to give the new layer a name");
+        }else if (answer == 1) {
             $scope.layer1.type = 1;
-            $scope.layer1.newname = 'Union ' + $scope.layer1.layername;
-            $scope.layer1.newdbname = 'union_'+$scope.layer1.dbname;
+            $scope.layer1.newname = $scope.layername;
+            $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_");
             $mdDialog.hide($scope.layer1);
         } else if (answer == 2){
             $scope.layer1.type = 2;
-            var name1 = $scope.layer1.layername.substr($scope.layer1.layername.indexOf(' '));
-            var name2 = $scope.layer2.layername.substr($scope.layer2.layername.indexOf(' '));
-            var dbname1 = $scope.layer1.dbname.substr($scope.layer1.dbname.indexOf('_'));
-            var dbname2 = $scope.layer2.dbname.substr($scope.layer2.dbname.indexOf('_'));
-            $scope.layer1.newname = 'Union' + name1 + name2;
-            $scope.layer1.newdbname = 'union'+dbname1+dbname2;
+            $scope.layer1.newname = $scope.layername;
+            $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_");
             $scope.layer1.dbname_b = $scope.layer2.dbname;
             $mdDialog.hide($scope.layer1);
         }
@@ -89,27 +89,7 @@ function DialogController_union($scope, $mdDialog, layers) {
 function DialogControllerUploadFile($scope, $mdDialog, UploadService) {
 
     $scope.file = null;
-    var fileData;
-    //File upload functions, used with ng-file-upload
-    /*$scope.$watch('file', function () {
-        console.log($scope.file);
-        if ($scope.file != null) {
-            console.log($scope.file);
-            UploadService.handleFile($scope.file).then(function (data) {
-                fileData = data;
-                console.log(data);
-                fileData.forEach(function (collection) {
-
-                    var name = collection.fileName;
-                    if (name === undefined || name === null) {
-                        name = "1234"
-                    }
-                    // Add a layer for each
-                    console.log(collection);
-                });
-            });
-        }
-    });*/
+    $scope.layername = null;
     $scope.hide = function() {
         $mdDialog.hide();
     };
@@ -121,7 +101,8 @@ function DialogControllerUploadFile($scope, $mdDialog, UploadService) {
             console.log($scope.file);
             UploadService.handleFile($scope.file).then(function (data) {
                 console.log(data);
-                $mdDialog.hide(data);
+                var newlayer = {name: $scope.layername, newdbname: $scope.layername.replace(/\s/g,"_"), geojsonbody: data};
+                $mdDialog.hide(newlayer);
             });
         }
     };
