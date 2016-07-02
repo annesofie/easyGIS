@@ -2,8 +2,8 @@
  * Created by AnneSofie on 14.02.2016.
  */
 
-easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'polygonLayerService', 'pointLayerService', 'lineLayerService', 'geoJsonService', 'layerService','UploadService',
-    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData, polygonLayerService, pointLayerService, lineLayerService, geoJsonService, layerService, UploadService) {
+easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'geoJsonService', 'layerService','UploadService',
+    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData,  geoJsonService, layerService, UploadService) {
 
         // Toolbar search toggle
         $scope.toggleSearch = function (element) {
@@ -196,6 +196,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         };
         $scope.changeLayerColor = function() {
             console.log($scope.activeLayer);
+            console.log($scope.hexPicker.color);
             $scope.chosenActiveLayer.obj.setStyle({
                 fillColor: $scope.hexPicker.color
             })
@@ -335,9 +336,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             } else {
                 layerService.getLayer('/api/layer/'+dbname)
                     .success(function (data) {
-                        console.log(data);
                         leafletData.getMap().then(function (map) {
-                            console.log(map);
 
                             var features = data.data[0].row_to_json.features;
                             var geolay = L.geoJson(features, {
@@ -347,7 +346,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                                 },
                                 onEachFeature: function (feature, lay) {
                                     feature.properties.datatype = datatype;
-                                    console.log(feature.properties);
                                     lay.bindPopup(name);
                                     if (feature.properties.tourism) {
                                         lay.bindPopup(feature.properties.tourism);
@@ -358,7 +356,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                             });
                             //geolay.on('click', highlightFeature);
                             geolay.addTo(map);
-                            console.log(geolay);
                             var activelay = {name: name, visible: true, obj: geolay};
                             $scope.activeLayers.push(activelay);
                             layersIntheMap.push(name);
@@ -382,7 +379,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 map.removeLayer(layer);
                 var i = $scope.activeLayers.indexOf(layer);
                 $scope.activeLayers.splice(i, 1); // Remove layer from activeLayers list
-                console.log($scope.activeLayers);
                 $scope.showRemovedSuccessWindow();
             });
         };

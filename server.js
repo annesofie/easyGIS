@@ -6,15 +6,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var assert = require('assert');
-//var pg = require('pg');
-
-//pg.defaults.ssl = true;
-/* ---- Create new DB table
-var connectionString = 'postgres://localhost:5432/';
-var client = new pg.Client(connectionString);
-client.connect();
-var query = client.query('CREATE TABLE trafikkmengde(gid SERIAL PRIMARY KEY, geom text not null)');
-query.on('end', function() { client.end(); });*/
 
 //Require Routes
 var routes = require('./routes/pg_routes');

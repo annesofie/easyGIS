@@ -22,9 +22,4 @@ router.post('/api/layer/newgeojson/', db.insertgeojsonlayer);
 router.post('/api/layer/:dbname', db.createNewTable);
 
 
-/*router.get('/api/puppies/:id', db.getSinglePuppy);
-router.post('/api/puppies', db.createPuppy);
-router.put('/api/puppies/:id', db.updatePuppy);
-router.delete('/api/puppies/:id', db.removePuppy);*/
-
 module.exports = router;
