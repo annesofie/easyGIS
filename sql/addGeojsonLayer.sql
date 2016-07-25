@@ -10,3 +10,6 @@ INSERT INTO ${newdbname~} (geom, properties)
 	    SELECT fc AS feat
 	    FROM data
 ) AS fsa;
+
+
+

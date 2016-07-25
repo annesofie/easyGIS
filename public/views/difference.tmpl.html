@@ -1,0 +1,45 @@
+<md-dialog aria-label="Form" class="medium-window">
+    <md-tabs class="md-min-height">
+        <md-tab label="Difference">
+            <md-content class="small-padding">
+                <form name="difference"><h3>Difference settings</h3>
+                    <!--<p><i>Unify two layers. (Only works on layers thats already been unified)</i></p>-->
+                    <div layout layout-lg="row">
+                        <md-select placeholder="Choose layer" ng-model="layer1" md-on-open="">
+                            <i>Point layers</i>
+                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no active point layers!</i></p>
+                            <i>Line layers</i>
+                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Line'}).length == 0"><i>There are no active line layers!</i></p>
+                            <i>Polygon layers</i>
+                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
+                        </md-select>
+                    </div>
+                    <div layout = "row" layout-lg="row">
+                        <md-select placeholder="Choose layer" ng-model="layer2" md-on-open="">
+                            <i>Point layers</i>
+                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no active point layers!</i></p>
+                            <i>Line layers</i>
+                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Line'}).length == 0"><i>There are no active line layers!</i></p>
+                            <i>Polygon layers</i>
+                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
+                        </md-select>
+                    </div>
+                    <md-input-container>
+                        <label>New layername</label>
+                        <input ng-model="layername">
+                    </md-input-container>
+                    <div class="md-dialog-actions" layout="row"><span flex></span>
+                        <md-button ng-click="cancel()"> Cancel</md-button>
+                        <md-button ng-click="answer()" class="md-primary">Create difference layer</md-button>
+                    </div>
+                </form>
+            </md-content>
+        </md-tab>
+    </md-tabs>
+</md-dialog>

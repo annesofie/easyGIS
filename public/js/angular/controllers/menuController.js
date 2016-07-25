@@ -24,6 +24,15 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.mapBoundsSouthWest = [];
         $scope.mapBoundsNorthEast = [];
 
+        layerService.getLayer('/api/layers/all')
+            .success(function(data) {
+                console.log(data);
+                $scope.layers = data.data;
+            })
+            .error(function(error) {
+                console.log('Error: ' + error);
+            });
+
         // ** Get layers available in database
         $scope.layer = null;
         $scope.layers = [];
@@ -37,9 +46,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     .error(function(error) {
                     console.log('Error: ' + error);
                 });
-                /*$scope.layers = [{name:'Restaurant', dbname: 'restaurant', datatype: 'Point'}, {name:'Pub', dbname: 'pub', datatype: 'Point'},
-                    {name: 'Kommuner', dbname: 'kommune', datatype: 'Polygon'}, {name: 'Trafikkmengde', dbname: 'trafikkmengde', datatype: 'Line'},
-                    {name: 'Restaurant buff 40 m', dbname: 'restaurant_buff_66_m', datatype: 'Polygon'}];*/
             }, 500);
         };
 
@@ -311,6 +317,23 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 });
 
         };
+        $scope.newDifferenceLayer = function(layer) {
+            $scope.loading = true;
+            var newlayer = {dbname_a: layer.dbname, dbname_b: layer.dbname_b, newdbname: layer.newdbname};
+            var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
+
+            layerService.postLayer('/api/layer/differencelayer/', newlayer)
+                .success(function(data) {
+                    console.log(data);
+                    layerService.postLayer('/api/layer/new', layerinfo);
+                    $scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
+                })
+                .error(function(error) {
+                    $scope.loading = false;
+                    console.log(error);
+                })
+
+        };
         var layersIntheMap = [];
         $scope.addLayerToMap = function (dbname, name, datatype) {
             var geojsonMarkerOptions = {  //Circles instead of markers on point-layers
@@ -395,7 +418,8 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     layer.geojsonbody.features.forEach(function(collection) {
                         $scope.loading = true;
                         var newlayer = {newdbname: layer.newdbname, geojsonbody: JSON.stringify(collection)};
-                        layerService.postLayer('/api/layer/newgeojson/', newlayer) // Add geojson data in the table
+
+                        layerService.postLayer('/api/layer/newgeojson/', newlayer) // Add geojson data to DB
                             .success(function(data) {
                                 console.log(data);
                             })
@@ -422,6 +446,20 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 });
 
         };
+
+        // ** Change content with tab change
+        $scope.tabclick = function(tab) {
+          switch (tab) {
+              case 'tab1':
+                  $scope.learning = false;
+                  break;
+              case 'tab2':
+                  $scope.learning = true;
+                  break;
+          }
+        };
+        // Initialize default content
+        $scope.learning = false;
 
 
         // **  Help functions
@@ -504,6 +542,22 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     } else if(answer.type == 2) {
                         $scope.newUnionLayerFromTwoLayers(answer);
                     }
+                }, function () {
+                    $scope.alert = 'You cancelled the dialog.';
+                });
+        };
+        $scope.showDifferenceWindow = function (ev) {
+            $mdDialog.show({
+                    controller: DialogController_difference,
+                    templateUrl: 'views/difference.tmpl.html',
+                    targetEvent: ev,
+                    clickOutsideToClose: true,
+                    locals: {
+                        layers: $scope.layers
+                    }
+                })
+                .then(function (answer) {
+                    $scope.newDifferenceLayer(answer);
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
                 });

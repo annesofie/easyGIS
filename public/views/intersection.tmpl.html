@@ -23,6 +23,10 @@
                                             <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.name}}</a></md-option>
                                             <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
                                         </md-select>
+                                        <md-input-container class="small-margin-left zero-margin-bottom">
+                                            <label>New layername</label>
+                                            <input ng-model="layername">
+                                        </md-input-container>
                                     </div>
                                     <div class="md-dialog-actions" layout="row"><span flex></span>
                                         <md-button ng-click="cancel()"> Cancel</md-button>
@@ -33,14 +37,16 @@
                     </md-tab-body>
                 </md-tab>
                 <md-tab>
-                    <md-tab-label>Within a bufferlayer</md-tab-label>
+                    <md-tab-label>Within a Polygonlayer</md-tab-label>
                     <md-tab-body>
                         <md-content class="md-padding small-padding">
-                            <form name="intersect"><h5>Choose which layers you want to intersect</h5>
-                                <div layout layout-sm="column"><br>
-                                    <md-select placeholder="Choose a bufferlayer" ng-model="polygonlayer" md-on-open="">
+                            <form name="intersect"><h5>Choose which layers you want to intersect and write a name for the new layer</h5>
+                                <div layout layout-sm="column">
+                                    <md-select placeholder="Choose a polygonlayer" ng-model="polygonlayer" md-on-open="">
                                         <md-option ng-value="polygonlayer" ng-repeat="polygonlayer in layers | filter: {layername: 'buff'}:false"><a>{{polygonlayer.layername}}</a></md-option>
                                         <p ng-show="(polygonlayers | filter: {name: 'buff'}:false).length == 0"><i>There are no buffer layers available!</i></p>
+                                        <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
+                                        <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no polygon layers in the database!</i></p>
                                     </md-select>
                                     <md-select placeholder="Choose a layer" ng-model="layer" md-on-open="">
                                         <i>Point layers</i>
@@ -53,29 +59,17 @@
                                         <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
                                         <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no polygon layers in the database!</i></p>
                                     </md-select>
-                                    <md-input-container>
+                                    <md-input-container class="small-margin-left zero-margin-bottom">
                                         <label>New layername</label>
                                         <input ng-model="layername">
                                     </md-input-container>
                                 </div>
                                 <div class="md-dialog-actions" layout="row"><span flex></span>
                                     <md-button ng-click="cancel()"> Cancel</md-button>
-                                    <md-button ng-click="answer(1)" class="md-primary">Create within layer</md-button>
+                                    <md-button ng-click="answer(1)" class="md-primary">Create layer</md-button>
                                 </div>
                             </form>
                         </md-content>
-                    </md-tab-body>
-
-                </md-tab>
-                <md-tab>
-                    <md-tab-label>Within a polygonlayer</md-tab-label>
-                    <md-tab-body>
-                        <div class="min-540 small-padding">
-                            <md-input-container>
-                                <label>Test input</label>
-                                <input type="text" name="myTestField">
-                            </md-input-container>
-                        </div>
                     </md-tab-body>
                 </md-tab>
             </md-tabs>

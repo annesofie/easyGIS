@@ -86,6 +86,32 @@ function DialogController_union($scope, $mdDialog, layers) {
 
     };
 }
+function DialogController_difference($scope, $mdDialog, layers) {
+    $scope.layer1 = null;
+    $scope.layer2 = null;
+    $scope.layers = layers;
+    $scope.layername = '';
+
+    $scope.hide = function() {
+        $mdDialog.hide();
+    };
+    $scope.cancel = function() {
+        $mdDialog.cancel();
+    };
+    $scope.answer = function(answer) {
+        console.log(answer);
+        if (!$scope.layername) {
+            //Cannot do operation, need a name
+            alert("You have to give the new layer a name");
+        } else {
+            $scope.layer1.newname = $scope.layername;
+            $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_");
+            $scope.layer1.dbname_b = $scope.layer2.dbname;
+            $mdDialog.hide($scope.layer1);
+        }
+
+    };
+}
 function DialogControllerUploadFile($scope, $mdDialog, UploadService) {
 
     $scope.file = null;
@@ -154,6 +180,6 @@ function DialogController_success($scope, $mdDialog, $timeout) {
     $scope.answer = function(answer) {
         $mdDialog.hide(answer);
     };
-    $timeout($mdDialog.hide, 120);
+    $timeout($mdDialog.hide, 140);
 
 }

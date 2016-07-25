@@ -12,6 +12,11 @@ easygis.config(function($routeProvider) {
                 controller: 'menuController',
                 templateUrl: 'views/map_frontpage.html'
             })
+        .when('/home',
+            {
+                controller: 'menuController',
+                templateUrl: 'views/map_frontpage.html'
+            })
         .when('/info',
             {
                 controller: 'infoController',

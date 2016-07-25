@@ -37,15 +37,18 @@ function sql(file) {
 var sqlGetAllLayers = sql('./sql/getAllLayers.sql');
 var sqlAddLayer = sql('./sql/addLayer.sql');
 var sqlgetLayer = sql('./sql/getLayer.sql');
+
 var sqlcreateaddbufferlayer = sql('./sql/create_and_add_bufferlayer.sql');
 var sqlcreateunionlayer = sql('./sql/create_union_layer.sql');
 var sqlcreateuniontwolayers = sql('./sql/create_union_layer_twoinputs.sql');
-var sqladdgeojsonlayer = sql('./sql/addGeojsonLayer.sql');
 var sqlcreatewitinlayer = sql('./sql/create_within_layer.sql');
+var sqlcreatedifferencelayer = sql('./sql/create_difference_layer.sql');
+
+var sqladdgeojsonlayer = sql('./sql/addGeojsonLayer.sql');
+
 var sqlcreatetablegeomproperties = sql('./sql/create_table(gid,geom,properties).sql');
 
 function getLayernames(req, res) {
-
     db.any(sqlGetAllLayers)
         .then(function(data) {
             res.status(200)
@@ -209,15 +212,15 @@ function createUnionLayerFromTwoLayers(req, res) {
             return res.status(400).json(err);
         });
 }
-function createtablegeomprop(req, res){
-
-    db.none(sqlcreatetablegeomproperties, req.body)
+function createDifferenceLayer(req, res) {
+    console.log(req.body);
+    db.none(sqlcreatedifferencelayer, req.body)
         .then(function(data) {
             res.status(200)
                 .json({
                     status: 'success',
                     data: data,
-                    message: 'Added union in new table'
+                    message: 'Added differencelayer in new table'
                 });
         })
         .catch(function (err) {
@@ -225,6 +228,24 @@ function createtablegeomprop(req, res){
             return res.status(400).json(err);
         });
 }
+
+function createtablegeomprop(req, res){   //Create table with geom and properties as attributes
+
+    db.none(sqlcreatetablegeomproperties, req.body)
+        .then(function(data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Created table'
+                });
+        })
+        .catch(function (err) {
+            console.log(err);
+            return res.status(400).json(err);
+        });
+}
+
 function insertgeojsonlayer(req, res) {
 
     db.none(sqladdgeojsonlayer, req.body)
@@ -240,7 +261,6 @@ function insertgeojsonlayer(req, res) {
             console.log(err);
             return res.status(400).json(err);
         });
-
 }
 
 module.exports = {
@@ -252,6 +272,7 @@ module.exports = {
     createWithinLayer: createWithinLayer,
     createUnionLayer: createUnionLayer,
     createUnionLayerFromTwoLayers: createUnionLayerFromTwoLayers,
+    createDifferenceLayer: createDifferenceLayer,
     createtablegeomprop: createtablegeomprop,
     insertgeojsonlayer: insertgeojsonlayer
 };

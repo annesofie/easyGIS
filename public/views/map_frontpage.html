@@ -109,11 +109,11 @@
                     <span class="md-body-2">Union</span>
                 </div>
             </md-list-item>
-            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="">
+            <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="showDifferenceWindow()">
                 <md-tooltip md-direction="right">Dissolve to layers</md-tooltip>
                 <md-icon md-svg-icon="./icons/dissolve.svg" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
-                    <span class="md-body-2">Dissolve</span>
+                    <span class="md-body-2">Difference</span>
                 </div>
             </md-list-item>
             <md-divider></md-divider>
@@ -149,11 +149,11 @@
                 </md-button>
             </div>
             <span flex></span>
-            <md-tabs md-stretch-tabs="always" md-selected="data.selectedIndex">
-                <md-tab id="tab1" aria-controls="tab1-content">
+            <md-tabs md-stretch-tabs="always">
+                <md-tab id="tab1" aria-controls="tab1-content" ng-click="tabclick('tab1')">
                     Map
                 </md-tab>
-                <md-tab id="tab2" aria-controls="tab2-content">
+                <md-tab id="tab2" aria-controls="tab2-content" ng-click="tabclick('tab2')">
                     Tutorial
                 </md-tab>
             </md-tabs>
@@ -170,8 +170,23 @@
             </div>
         </md-toolbar>
         <md-content flex>
-            <leaflet lf-center="center.trondheim" controls="controls" width="100%" height="800px"></leaflet>
-            <PRE>Saved items :{{savedItems | json}}</PRE>
+
+            <leaflet lf-center="center.trondheim" controls="controls" width="100%" height="800px" ng-hide="learning"></leaflet>
+
+            <div class="medium-padding-left" layout="column" layout-align="space-between start" flex ng-show="learning"  ng-controller="learningController">
+                <br>
+                <h3>Teach how to use easyGIS</h3>
+                <br>
+                <div class="" layout="row" ng-repeat="item in checkboxes">
+                    <md-checkbox class="green" ng-checked="" ng-click="">
+                        <p class="helptext"><b>{{item.nr}}. {{item.name}}</b> <span class="ipsum" ng-if="hintHelp(item.nr)"> Description: {{item.desciption}}</span></p>
+                    </md-checkbox>
+                    <md-button class="helpbutton" ng-click="needhelp(item.nr)" ng-if="hidehelp(item.nr)"> <md-icon md-svg-icon="action:ic_help_24px"> </md-icon></md-button>
+                </div>
+
+            </div>
+
+            <!--<PRE>Saved items :{{savedItems | json}}</PRE>-->
         </md-content>
     </div>
 </div>

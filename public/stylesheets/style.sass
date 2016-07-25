@@ -28,7 +28,7 @@ md-content.md-default-theme
   margin-left: 10%
 
 .dragover
-  border: 5px dashed green
+  border: 5px dashed #008000
 
 .leaflet-top
   z-index: 0
@@ -50,6 +50,10 @@ md-content.md-default-theme
   margin-left: 27%
 .small-margin-bottom
   margin-bottom: 6%
+.small-margin-left
+  margin-left: 4%
+.zero-margin-bottom
+  margin-bottom: 0px
 .md-color
   color: rgba(0,0,0,0.26)
 .md-small-padding-right
@@ -69,10 +73,26 @@ md-content.md-default-theme
 .medium-padding
   padding: 6%
 
+// ** Checkbox
+.ipsum
+  color: #6f726d
+
+//Text
+.helptext
+  margin-bottom: 0px
+  margin-top: 6px
+  margin-left: 30px
+  margin-right: 4px
+//Helpbtn
+.helpbutton
+  margin-left: 30px
+  margin-bottom: 12px
+  padding-bottom: 0px
+
+
 md-tabs:not(.md-no-tab-content):not(.md-dynamic-height)
   min-height: 400px
 
-// Navigation drawer pattern: https://www.google.com/design/spec/patterns/navigation-drawer.html#navigation-drawer-specs
 md-sidenav
   & > md-toolbar
     padding: 15px
@@ -97,7 +117,6 @@ md-sidenav
     height: 64px
     width: 64px
 
-/* More closely matches https://www.google.com/design/spec/components/lists.html#lists-specs */
 md-list-item.md-3-line
   md-divider
     &[md-inset]
