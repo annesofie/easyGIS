@@ -4,24 +4,31 @@
             <md-tabs class="my-tabs" md-center-tabs="false" md-selected="activeTabIndex" md-no-ink="true"
                      md-autoselect="false" md-dynamic-height="true">
                 <md-tab>
-                    <md-tab-label>Within a city</md-tab-label>
+                    <md-tab-label>Within a pointlayer</md-tab-label>
                     <md-tab-body>
                             <md-content class="md-padding small-padding">
-                                <form name="intersect"><h5>Choose which city and layer you want to intersect</h5>
+                                <form name="intersect"><h5>Choose which layers you want to intersect and write the name of the new layer</h5>
                                     <div layout layout-sm="column"><br>
-                                        <md-select placeholder="Choose city" ng-model="name" md-on-open="">
-                                            <md-option ng-value="name" ng-repeat="name in names | filter:query | orderBy:name"><a>{{name}}</a></md-option>
+                                        <md-select placeholder="Choose a pointlayer" ng-model="polygonlayer" md-on-open="">
+                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.layername}}</a></md-option>
+                                            <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no point layers in the database!</i></p>
                                         </md-select>
                                         <md-select placeholder="Choose layer" ng-model="layer" md-on-open="">
                                             <i>Point layers</i>
-                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.name}}</a></md-option>
+                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.layername}}</a></md-option>
                                             <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no active point layers!</i></p>
                                             <i>Line layers</i>
-                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.name}}</a></md-option>
+                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.layername}}</a></md-option>
                                             <p ng-show="(layers | filter:{datatype: 'Line'}).length == 0"><i>There are no active line layers!</i></p>
                                             <i>Polygon layers</i>
-                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.name}}</a></md-option>
+                                            <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
                                             <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
+                                            <i>Multi layers</i>
+                                            <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Multi', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
+                                            <p ng-show="(layers | filter:{datatype: 'Multi'}).length == 0"><i>There are no layers with multipe geometries in the database!</i></p>
+                                            <i>Unified layers</i>
+                                            <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {layername: 'Union'}"><a>{{layer.layername}}</a></md-option>
+                                            <p ng-show="(layers | filter:{layername: 'Union'}).length == 0"><i>There are no unified layers!</i></p>
                                         </md-select>
                                         <md-input-container class="small-margin-left zero-margin-bottom">
                                             <label>New layername</label>
@@ -34,6 +41,46 @@
                                     </div>
                                 </form>
                             </md-content>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab>
+                    <md-tab-label>Within a linelayer</md-tab-label>
+                    <md-tab-body>
+                        <md-content class="md-padding small-padding">
+                            <form name="intersect"><h5>Choose which layers you want to intersect and write the name of the new layer</h5>
+                                <div layout layout-sm="column"><br>
+                                    <md-select placeholder="Choose a linelayer" ng-model="polygonlayer" md-on-open="">
+                                        <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.layername}}</a></md-option>
+                                        <p ng-show="(layers | filter:{datatype: 'Line'}).length == 0"><i>There are no linelayers in the database!</i></p>
+                                    </md-select>
+                                    <md-select placeholder="Choose layer" ng-model="layer" md-on-open="">
+                                        <i>Point layers</i>
+                                        <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Point'}"><a>{{layer.layername}}</a></md-option>
+                                        <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no active point layers!</i></p>
+                                        <i>Line layers</i>
+                                        <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Line'}"><a>{{layer.layername}}</a></md-option>
+                                        <p ng-show="(layers | filter:{datatype: 'Line'}).length == 0"><i>There are no active line layers!</i></p>
+                                        <i>Polygon layers</i>
+                                        <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
+                                        <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
+                                        <i>Multi layers</i>
+                                        <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Multi', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
+                                        <p ng-show="(layers | filter:{datatype: 'Multi'}).length == 0"><i>There are no layers with multipe geometries in the database!</i></p>
+                                        <i>Unified layers</i>
+                                        <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {layername: 'Union'}"><a>{{layer.layername}}</a></md-option>
+                                        <p ng-show="(layers | filter:{layername: 'Union'}).length == 0"><i>There are no unified layers!</i></p>
+                                    </md-select>
+                                    <md-input-container class="small-margin-left zero-margin-bottom">
+                                        <label>New layername</label>
+                                        <input ng-model="layername">
+                                    </md-input-container>
+                                </div>
+                                <div class="md-dialog-actions" layout="row"><span flex></span>
+                                    <md-button ng-click="cancel()"> Cancel</md-button>
+                                    <md-button ng-click="answer(0)" class="md-primary">Create within layer</md-button>
+                                </div>
+                            </form>
+                        </md-content>
                     </md-tab-body>
                 </md-tab>
                 <md-tab>
@@ -58,6 +105,12 @@
                                         <i>Polygon layers</i>
                                         <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
                                         <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no polygon layers in the database!</i></p>
+                                        <i>Multi layers</i>
+                                        <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Multi', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
+                                        <p ng-show="(layers | filter:{datatype: 'Multi'}).length == 0"><i>There are no layers with multipe geometries in the database!</i></p>
+                                        <i>Unified layers</i>
+                                        <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {layername: 'Union'}"><a>{{layer.layername}}</a></md-option>
+                                        <p ng-show="(layers | filter:{layername: 'Union'}).length == 0"><i>There are no unified layers!</i></p>
                                     </md-select>
                                     <md-input-container class="small-margin-left zero-margin-bottom">
                                         <label>New layername</label>

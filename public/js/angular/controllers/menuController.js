@@ -26,7 +26,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
         layerService.getLayer('/api/layers/all')
             .success(function(data) {
-                console.log(data);
                 $scope.layers = data.data;
             })
             .error(function(error) {
@@ -40,7 +39,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             return $timeout(function () {
                 layerService.getLayer('/api/layers/all')
                     .success(function(data) {
-                        console.log(data);
                         $scope.layers = data.data;
                     })
                     .error(function(error) {
@@ -183,8 +181,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 $scope.showEditMenu = false;
             } else {
                 $scope.showEditMenu = true;
-                console.log($scope.activeLayer);
-                console.log(layer);
+
                 $scope.chosenActiveLayer = layer; //New active layer
                 highlightChosenActive(layer.obj);
             }
@@ -201,8 +198,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             color: ''
         };
         $scope.changeLayerColor = function() {
-            console.log($scope.activeLayer);
-            console.log($scope.hexPicker.color);
             $scope.chosenActiveLayer.obj.setStyle({
                 fillColor: $scope.hexPicker.color
             })
@@ -230,7 +225,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 map.removeLayer($scope.chosenActiveLayer.obj);
                 var i = $scope.activeLayers.indexOf($scope.chosenActiveLayer);
                 $scope.activeLayers.splice(i, 1); // Remove layer from activeLayers list
-                console.log($scope.activeLayers);
                 $scope.showRemovedSuccessWindow();
             });
         };
@@ -254,7 +248,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
             layerService.postLayer('/api/layer/buffer/', newlayer)
                 .success(function(data) {
-                    console.log(data);
                     layerService.postLayer('/api/layer/new', layerinfo);
                     $scope.addLayerToMap(layer.newdbname,  layer.newname, 'Polygon');
                 })
@@ -263,15 +256,12 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 });
         };
         $scope.newIntersectionLayer = function(layer){
-            console.log(layer);
             $scope.loading = true;
             var newlayer = {a_dbname: layer.dbname, b_dbname: layer.b_dbname, newdbname: layer.newdbname};
             var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
-            console.log(newlayer);
-            console.log(layerinfo);
+
             layerService.postLayer('/api/layer/within/', newlayer)
                 .success(function(response){
-                    console.log(response);
                     layerService.postLayer('/api/layer/new', layerinfo);
                     $scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
                 })
@@ -289,7 +279,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
             layerService.postLayer('/api/layer/unionlayer/oneinput/', newlayer)
                 .success(function(data) {
-                    console.log(data);
                     layerService.postLayer('/api/layer/new', layerinfo);
                     $scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
                 })
@@ -304,10 +293,8 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             var newlayer = {dbname_a: layer.dbname, dbname_b: layer.dbname_b, newdbname: layer.newdbname};
             var layerinfo = {layername: layer.newname, dbname: layer.newdbname, datatype: layer.datatype};
 
-            console.log(layer);
             layerService.postLayer('/api/layer/unionlayer/twoinput/', newlayer)
                 .success(function(data) {
-                    console.log(data);
                     layerService.postLayer('/api/layer/new', layerinfo);
                     $scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
                 })
@@ -324,7 +311,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
             layerService.postLayer('/api/layer/differencelayer/', newlayer)
                 .success(function(data) {
-                    console.log(data);
                     layerService.postLayer('/api/layer/new', layerinfo);
                     $scope.addLayerToMap(layer.newdbname,  layer.newname, layer.datatype);
                 })
@@ -390,6 +376,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     })
                     .error(function (error) {
                         $scope.loading = false;
+
                         console.log(error);
                     });
             }
@@ -413,7 +400,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             var newtable = {newdbname: layer.newdbname};
             layerService.postLayer('/api/layer/newtable/geomproperties/', newtable)   //Create the new table
                 .success(function(data) {
-                    console.log(data);
 
                     layer.geojsonbody.features.forEach(function(collection) {
                         $scope.loading = true;
@@ -421,7 +407,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
 
                         layerService.postLayer('/api/layer/newgeojson/', newlayer) // Add geojson data to DB
                             .success(function(data) {
-                                console.log(data);
+                                //Datasett added to DB
                             })
                             .error(function(error) {
                                 console.log(error);
@@ -462,32 +448,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.learning = false;
 
 
-        // **  Help functions
-
-        $scope.selectedFeature = null;
-        $scope.featureList = [];
-        function highlightFeature(e) {
-            var layer = e.layer;
-            console.log(layer);
-            var index = $scope.featureList.indexOf(layer);
-            if (index >= 0) {
-                $scope.featureList.splice(index, 1);
-                layer.setStyle({
-                    "opacity": 0.5
-                });
-                return;
-            } else {
-                $scope.featureList.push(layer);
-                layer.setStyle({
-                    "opacity": 1
-                });
-                return;
-            }
-
-            if (!L.Browser.ie && !L.Browser.opera) {
-                layer.bringToFront();
-            }
-        }
 
         // ** Left menu, open new window:
 
@@ -502,7 +462,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     }
                 })
                 .then(function (answer) {
-                    console.log(answer);
                     $scope.newBufferLayer(answer);
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
@@ -519,7 +478,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     }
                 })
                 .then(function (answer) {
-                    console.log(answer);
                     $scope.newIntersectionLayer(answer);
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
@@ -536,7 +494,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     }
                 })
                 .then(function (answer) {
-                    console.log(answer);
                     if (answer.type == 1){
                         $scope.newUnionLayer(answer);
                     } else if(answer.type == 2) {
@@ -586,7 +543,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     clickOutsideToClose: true
                 })
                 .then(function (answer) {
-                    console.log(answer[0] + answer[1] + answer[2]);
                     $scope.addnewlayer(answer[0], 0, 'nothing', answer[1], answer[2]);
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
@@ -609,6 +565,19 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             $mdDialog.show({
                     controller: DialogController_success,
                     template: '<md-button ng-click="answer(ok)" class="md-raised md-primary"><md-icon md-svg-src="action:ic_done_24px"></md-icon>Layer was removed</md-button></md-content>',
+                    targetEvent: ev,
+                    clickOutsideToClose: true
+                })
+                .then(function (answer) {
+                    console.log('pushed ok');
+                }, function () {
+                    $scope.alert = 'You cancelled the dialog.';
+                });
+        };
+        $scope.showRemovedSuccessWindow = function (ev) {
+            $mdDialog.show({
+                    controller: DialogController_success,
+                    template: '<md-button ng-click="answer(ok)" class="md-raised md-primary"><md-icon md-svg-src="action:ic_done_24px"></md-icon>Something went wrong, could not add layer. Try again!</md-button></md-content>',
                     targetEvent: ev,
                     clickOutsideToClose: true
                 })
@@ -661,19 +630,6 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         };
     }]);
 
-easygis.controller('ListBottomSheetCtrl', function ($scope, $mdBottomSheet) {
-    $scope.items = [
-        {name: 'Share', icon: 'social:ic_share_24px'},
-        {name: 'Upload', icon: 'file:ic_cloud_upload_24px'},
-        {name: 'Copy', icon: 'content:ic_content_copy_24px'},
-        {name: 'Print this page', icon: 'action:ic_print_24px'},
-    ];
-
-    $scope.listItemClick = function ($index) {
-        var clickedItem = $scope.items[$index];
-        $mdBottomSheet.hide(clickedItem);
-    };
-});
 
 
 

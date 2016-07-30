@@ -27,10 +27,6 @@ easygis.config(function($routeProvider) {
             controller: 'mapController',
             templateUrl: 'views/frontpage.html'
         })
-        .when('/menu', {
-            controller: 'mapController',
-            templateUrl: 'views/menu.html'
-        })
         .otherwise({ redirectTo: '/'});
 
 });

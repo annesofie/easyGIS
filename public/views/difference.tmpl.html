@@ -15,6 +15,12 @@
                             <i>Polygon layers</i>
                             <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
                             <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
+                            <i>Multi layers</i>
+                            <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Multi', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Multi'}).length == 0"><i>There are no layers with multipe geometries in the database!</i></p>
+                            <i>Unified layers</i>
+                            <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {layername: 'Union'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Union'}).length == 0"><i>There are no unified layers!</i></p>
                         </md-select>
                     </div>
                     <div layout = "row" layout-lg="row">
@@ -28,6 +34,12 @@
                             <i>Polygon layers</i>
                             <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon'}"><a>{{layer.layername}}</a></md-option>
                             <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
+                            <i>Multi layers</i>
+                            <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Multi', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Multi'}).length == 0"><i>There are no layers with multipe geometries in the database!</i></p>
+                            <i>Unified layers</i>
+                            <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {layername: 'Union'}"><a>{{layer.layername}}</a></md-option>
+                            <p ng-show="(layers | filter:{datatype: 'Union'}).length == 0"><i>There are no unified layers!</i></p>
                         </md-select>
                     </div>
                     <md-input-container>

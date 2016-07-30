@@ -8,7 +8,7 @@
                             <br>
                             <div layout layout-lg="column">
                                 <md-select placeholder="Choose layer" ng-model="layer1" md-on-open="">
-                                    <i>Point layers</i>
+                                    <i>Point layers</i>u
                                     <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Point', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
                                     <p ng-show="(layers | filter:{datatype: 'Point'}).length == 0"><i>There are no active point layers!</i></p>
                                     <i>Line layers</i>
@@ -17,6 +17,12 @@
                                     <i>Polygon layers</i>
                                     <md-option ng-value="layer" ng-click="" ng-repeat="layer in layers | filter: {datatype: 'Polygon', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
                                     <p ng-show="(layers | filter:{datatype: 'Polygon'}).length == 0"><i>There are no active polygon layers!</i></p>
+                                    <i>Multi layers</i>
+                                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {datatype: 'Multi', layername: '!Union'}"><a>{{layer.layername}}</a></md-option>
+                                    <p ng-show="(layers | filter:{datatype: 'Multi'}).length == 0"><i>There are no layers with multipe geometries in the database!</i></p>
+                                    <i>Unified layers</i>
+                                    <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {layername: 'Union'}"><a>{{layer.layername}}</a></md-option>
+                                    <p ng-show="(layers | filter:{layername: 'Union'}).length == 0"><i>There are no unified layers!</i></p>
                                 </md-select>
                             </div>
                             <md-input-container>

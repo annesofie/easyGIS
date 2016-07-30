@@ -13,11 +13,18 @@ function DialogControllerBuff($scope, $mdDialog, layers) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        $scope.layer.buffdist = $scope.bufferdist;
-        $scope.layer.datatype = 'Polygon';
-        $scope.layer.newname = $scope.layer.layername + ' buff ' + $scope.bufferdist + 'm';
-        $scope.layer.newdbname = $scope.layer.dbname + '_buff_' + $scope.bufferdist + '_m';
-        $mdDialog.hide($scope.layer);
+        console.log($scope.bufferdist);
+        if (!$scope.layer) {
+            alert("You have to write a bufferdistance");
+        } else if ($scope.bufferdist < 0) {
+            alert("Bufferdistance cannot be negative");
+        } else {
+            $scope.layer.buffdist = $scope.bufferdist;
+            $scope.layer.datatype = 'Polygon';
+            $scope.layer.newname = $scope.layer.layername + ' buff ' + $scope.bufferdist + 'm';
+            $scope.layer.newdbname = $scope.layer.dbname + '_buff_' + $scope.bufferdist + '_m';
+            $mdDialog.hide($scope.layer);
+        }
     };
 
 }
@@ -36,21 +43,23 @@ function DialogController_int($scope, $mdDialog, layers) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        if (!$scope.layername) {
+        if (!$scope.layername || !$scope.layer) {
             //Cannot do operation, need a name
-            alert("You have to give the new layer a name");
-        } else if(answer == 0) {
-            $scope.layer.intervar= $scope.name;
-            $scope.layer.intername = $scope.name;
-            console.log(JSON.stringify($scope.layer) + ' input inter_city');
-            $mdDialog.hide($scope.layer);
+            alert("Missing input. Remember to write a name for the new layer");
+        //} else if(answer == 0 && $scope.name) {
+            //    $scope.layer.b_dbname= $scope.polygonlayer.dbname;
+            //    $scope.layer.newname = $scope.layername;
+            //    $scope.layer.newdbname = $scope.layername.replace(/\s/g,"_");
+            //    $mdDialog.hide($scope.layer);
 
-        } else if (answer == 1) {
+        } else if ($scope.polygonlayer) {
             $scope.layer.b_dbname = $scope.polygonlayer.dbname;
             $scope.layer.newname = $scope.layername;
             $scope.layer.newdbname = $scope.layername.replace(/\s/g,"_");
-            console.log(JSON.stringify($scope.layer) + ' input inter_buff');
             $mdDialog.hide($scope.layer);
+        } else {
+            alert("Something went wrong. Remember to write a name for the new layer");
+
         }
     };
 }
@@ -58,7 +67,7 @@ function DialogController_union($scope, $mdDialog, layers) {
     $scope.layer1 = null;
     $scope.layer2 = null;
     $scope.layers = layers;
-    $scope.layername;
+    $scope.layername = null;
 
     $scope.hide = function() {
         $mdDialog.hide();
@@ -67,21 +76,25 @@ function DialogController_union($scope, $mdDialog, layers) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        console.log(answer);
-        if (!$scope.layername) {
-            //Cannot do operation, need a name
-            alert("You have to give the new layer a name");
-        }else if (answer == 1) {
+        if (!$scope.layername || !$scope.layer1) {
+            alert("Missing input. Remember to write a name for the new layer");
+        } else if (answer == 1) {
+            if ($scope.layername.toLowerCase().indexOf('union') == -1) {
+                $scope.layername = 'Union ' + $scope.layername;
+                console.log($scope.layername);
+            }
             $scope.layer1.type = 1;
             $scope.layer1.newname = $scope.layername;
             $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_");
             $mdDialog.hide($scope.layer1);
-        } else if (answer == 2){
+        } else if (answer == 2 && $scope.layer2){
             $scope.layer1.type = 2;
             $scope.layer1.newname = $scope.layername;
             $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_");
             $scope.layer1.dbname_b = $scope.layer2.dbname;
             $mdDialog.hide($scope.layer1);
+        } else {
+            alert("Something went wrong. Remember to write a name for the new layer");
         }
 
     };
@@ -100,9 +113,9 @@ function DialogController_difference($scope, $mdDialog, layers) {
     };
     $scope.answer = function(answer) {
         console.log(answer);
-        if (!$scope.layername) {
+        if (!$scope.layername || !$scope.layer1 || !$scope.layer2) {
             //Cannot do operation, need a name
-            alert("You have to give the new layer a name");
+            alert("Missing input. Remember to write a name for the new layer");
         } else {
             $scope.layer1.newname = $scope.layername;
             $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_");
@@ -180,6 +193,6 @@ function DialogController_success($scope, $mdDialog, $timeout) {
     $scope.answer = function(answer) {
         $mdDialog.hide(answer);
     };
-    $timeout($mdDialog.hide, 140);
+    $timeout($mdDialog.hide, 180);
 
 }
