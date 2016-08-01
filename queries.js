@@ -15,16 +15,16 @@ console.log(process.env.DATABASE_URL);
 //var connectionString = process.env.DATABASE_URL || 'postgres://localhost:5432/AnneSofie';
 var connectionString = 'postgres://localhost:5432/AnneSofie';
 var cn = {
-    host: 'ec2-184-73-216-242.compute-1.amazonaws.com',
+    host: 'easygisdb.ctk9vezgxe5q.eu-west-1.rds.amazonaws.com',
     port: 5432,
-    database: 'd1nbdgn5u9fh9s',
-    user: 'ofufbplhdsewot',
-    password: 'd6uTWxpFoW5Z0zNYOFrm3ZqdUj',
+    database: 'easygisdb',
+    user: 'easygisuser',
+    password: 'easygispassword',
     ssl: true
 
 };
-//var db = pgp(cn);
-var db = pgp(connectionString);
+var db = pgp(cn);
+//var db = pgp(connectionString);
 
 // add query functions
 
@@ -136,35 +136,6 @@ function createBufferLayer(req, res) {
             return res.status(400).json(err);
         });
 }
-/*function createIntersectionWithBuffLayer(req, res) {
-    //Data from http requests
-    console.log('inside create intersection layer');
-    var a_dbname = req.body.a_dbname;
-    var b_dbname = req.body.b_dbname;
-    var newdbname = req.body.newdbname;
-    console.log(req.body);
-
-    db.none('CREATE TABLE IF NOT EXISTS '+newdbname+' (gid SERIAL PRIMARY KEY, geom text not null); '+
-    ' INSERT INTO '+newdbname+' (geom) '+
-    ' SELECT  CASE  WHEN ST_CoveredBy('+a_dbname+'.geom, '+b_dbname+'.geom) ' +
-        ' THEN '+a_dbname+'.geom ELSE ST_AsText(ST_Multi(ST_Intersection('+a_dbname+'.geom, '+b_dbname+'.geom))) ' +
-    ' END AS geom FROM '+a_dbname+' INNER JOIN '+b_dbname+' ON ST_Intersects('+a_dbname+'.geom, '+a_dbname+'.geom);')
-        .then(function (data) {
-            res.status(200)
-                .json({
-                    status: 'success',
-                    data: data,
-                    message: 'Intersectionlayer is added'
-                });
-        })
-        .catch(function (err) {
-           // console.log(err.toString());
-            return res.status(400).json({
-                status: 'failed',
-                message: JSON.stringify(err)
-            });
-        });
-}*/
 function createWithinLayer(req, res) {
     console.log(req.body);
     db.none(sqlcreatewitinlayer, req.body)

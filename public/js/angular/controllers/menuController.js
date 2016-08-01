@@ -2,8 +2,8 @@
  * Created by AnneSofie on 14.02.2016.
  */
 
-easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'geoJsonService', 'layerService','UploadService',
-    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData,  geoJsonService, layerService, UploadService) {
+easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$mdSidenav', '$mdDialog', 'leafletData', 'layerService','UploadService',
+    function ($scope, $timeout, $mdBottomSheet, $mdSidenav, $mdDialog, leafletData,  layerService, UploadService) {
 
         // Toolbar search toggle
         $scope.toggleSearch = function (element) {
