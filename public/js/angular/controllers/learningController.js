@@ -6,6 +6,11 @@ easygis.controller('learningController', ['$scope', function($scope) {
 
     $scope.checkboxes = [
         {
+            'nr': '0',
+            'name': 'Upload a new datasett',
+            'desciption': 'Press the pink, round icon on the top right of the page. Drag a geojson file over to the fileupload window, or press the green field and chose your file. Give your datasett a name and press import file.'
+        },
+        {
             'nr': '1',
             'name': 'Add a layer to the map',
             'desciption': 'Locate the button in the left menu where the description is Add a layer. Click and a list with all the available layers appears. Click on one layer and wait intil it is loaded on the map.'
@@ -39,7 +44,17 @@ easygis.controller('learningController', ['$scope', function($scope) {
         {
             'nr': '7',
             'name': 'Look at the map and the two layers you created in task 5 and 6. ',
-            'desciption': 'Now you can see the difference in creating a intersection layer. The output depens on the input and which order you intersect the layers.'
+            'desciption': 'Now you can see the difference in the two intersection layers. The output depens on the input layers and which order you intersect the layers.'
+        },
+        {
+            'nr': '8',
+            'name': 'Unify one of the intersection layers',
+            'desciption': 'Press the Union button, chose your layer from the layerlist. Give the new layer a name and press Create layer button.'
+        },
+        {
+            'nr': '9',
+            'name': 'Choose two layers and do the difference operation on them',
+            'desciption': 'Press the Difference button, chose the two layers. Give the new layer a name and press Create layer button.'
         }
     ];
 

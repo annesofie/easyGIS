@@ -1,9 +1,11 @@
 <md-dialog aria-label="Form">
     <md-content class="md-padding">
+        <h4>Upload a new file</h4>
+        <p><i>OBS! Only works for geojson files</i></p>
         <form name="fileimport">
                 <div layout="row">
                     <div ngf-drop ngf-select ng-model="file" class="drop-box" id="dropbox"  ngf-drag-over-class="dragover" ngf-allow-dir="true">
-                        <h4 style="align-self: center">Drop your file here</h4>
+                        <h4 style="align-self: center">Click in this area or drop your file here</h4>
                     </div>
                     <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
                 </div>

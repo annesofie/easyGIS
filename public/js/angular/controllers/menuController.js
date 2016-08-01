@@ -575,7 +575,7 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     clickOutsideToClose: true
                 })
                 .then(function (answer) {
-                    //close windon
+                    //close window
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
                 });
