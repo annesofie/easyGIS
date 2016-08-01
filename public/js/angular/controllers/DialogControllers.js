@@ -44,18 +44,11 @@ function DialogController_int($scope, $mdDialog, layers) {
     };
     $scope.answer = function(answer) {
         if (!$scope.layername || !$scope.layer) {
-            //Cannot do operation, need a name
             alert("Missing input. Remember to write a name for the new layer");
-        //} else if(answer == 0 && $scope.name) {
-            //    $scope.layer.b_dbname= $scope.polygonlayer.dbname;
-            //    $scope.layer.newname = $scope.layername;
-            //    $scope.layer.newdbname = $scope.layername.replace(/\s/g,"_");
-            //    $mdDialog.hide($scope.layer);
-
         } else if ($scope.polygonlayer) {
             $scope.layer.b_dbname = $scope.polygonlayer.dbname;
             $scope.layer.newname = $scope.layername;
-            $scope.layer.newdbname = $scope.layername.replace(/\s/g,"_");
+            $scope.layer.newdbname = $scope.layername.replace(/\s/g,"_").toLowerCase();
             $mdDialog.hide($scope.layer);
         } else {
             alert("Something went wrong. Remember to write a name for the new layer");
@@ -85,12 +78,16 @@ function DialogController_union($scope, $mdDialog, layers) {
             }
             $scope.layer1.type = 1;
             $scope.layer1.newname = $scope.layername;
-            $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_");
+            $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_").toLowerCase();
             $mdDialog.hide($scope.layer1);
         } else if (answer == 2 && $scope.layer2){
+            if ($scope.layername.toLowerCase().indexOf('union') == -1) {
+                $scope.layername = 'union ' + $scope.layername;
+                console.log($scope.layername);
+            }
             $scope.layer1.type = 2;
             $scope.layer1.newname = $scope.layername;
-            $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_");
+            $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_").toLowerCase();
             $scope.layer1.dbname_b = $scope.layer2.dbname;
             $mdDialog.hide($scope.layer1);
         } else {
@@ -118,7 +115,7 @@ function DialogController_difference($scope, $mdDialog, layers) {
             alert("Missing input. Remember to write a name for the new layer");
         } else {
             $scope.layer1.newname = $scope.layername;
-            $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_");
+            $scope.layer1.newdbname = $scope.layername.replace(/\s/g,"_").toLowerCase();
             $scope.layer1.dbname_b = $scope.layer2.dbname;
             $mdDialog.hide($scope.layer1);
         }
@@ -136,13 +133,16 @@ function DialogControllerUploadFile($scope, $mdDialog, UploadService) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        if ($scope.file != null) {
-            console.log($scope.file);
+        var name = $scope.file.name;
+        if (!name.endsWith('.geojson')){
+            alert('Can only upload geojson files');
+        } else if ($scope.file != null) {
             UploadService.handleFile($scope.file).then(function (data) {
-                console.log(data);
-                var newlayer = {name: $scope.layername, newdbname: $scope.layername.replace(/\s/g,"_"), geojsonbody: data};
+                var newlayer = {name: $scope.layername, newdbname: $scope.layername.replace(/\s/g,"_").toLowerCase(), geojsonbody: data};
                 $mdDialog.hide(newlayer);
             });
+        } else {
+            alert('Something went wrong, try again.')
         }
     };
 }
@@ -157,7 +157,7 @@ function DialogController_removelayer($scope, $mdDialog, layers) {
         $mdDialog.cancel();
     };
     $scope.answer = function(answer) {
-        $mdDialog.hide($scope.activelayer.obj);
+        $mdDialog.hide($scope.activelayer);
     };
     $scope.activelayers = layers;
 }
@@ -193,6 +193,6 @@ function DialogController_success($scope, $mdDialog, $timeout) {
     $scope.answer = function(answer) {
         $mdDialog.hide(answer);
     };
-    $timeout($mdDialog.hide, 180);
+    $timeout($mdDialog.hide, 1000);
 
 }

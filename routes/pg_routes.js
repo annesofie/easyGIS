@@ -29,5 +29,7 @@ router.post('/api/layer/newgeojson/', db.insertgeojsonlayer);
 
 router.post('/api/layer/:dbname', db.createNewTable);
 
+router.post('/api/droptable/', db.droptable);
+
 
 module.exports = router;

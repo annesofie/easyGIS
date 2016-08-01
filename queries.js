@@ -48,6 +48,8 @@ var sqladdgeojsonlayer = sql('./sql/addGeojsonLayer.sql');
 
 var sqlcreatetablegeomproperties = sql('./sql/create_table(gid,geom,properties).sql');
 
+var sqldroptable = sql('./sql/droptable.sql');
+
 function getLayernames(req, res) {
     db.any(sqlGetAllLayers)
         .then(function(data) {
@@ -59,7 +61,7 @@ function getLayernames(req, res) {
                 });
         })
         .catch(function (err) {
-            if (error instanceof pgp.errors.QueryFileError) {
+            if (err instanceof pgp.errors.QueryFileError) {
                 // => the error is related to our QueryFile
                 console.log('There is a problem with the queryfile');
             }
@@ -263,6 +265,23 @@ function insertgeojsonlayer(req, res) {
         });
 }
 
+function droptable(req, res) {
+
+    db.none(sqldroptable, req.body)
+        .then(function (data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Table was deleted'
+                });
+        })
+        .catch(function (err) {
+            console.log(err);
+            return res.status(400).json(err);
+        });
+}
+
 module.exports = {
     getLayernames: getLayernames,
     addLayer: addLayer,
@@ -274,5 +293,6 @@ module.exports = {
     createUnionLayerFromTwoLayers: createUnionLayerFromTwoLayers,
     createDifferenceLayer: createDifferenceLayer,
     createtablegeomprop: createtablegeomprop,
-    insertgeojsonlayer: insertgeojsonlayer
+    insertgeojsonlayer: insertgeojsonlayer,
+    droptable: droptable
 };

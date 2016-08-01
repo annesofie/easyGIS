@@ -340,43 +340,47 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
             $scope.loading = true;
             if(layersIntheMap.length > 0 && layersIntheMap.indexOf(name) >= 0){ //Check if layer already in the map
                 //do not add layer to the map
-                console.log('layer already on the map');
+                $scope.showLayerAlreadyInMapWindow();
                 $scope.loading = false;
             } else {
                 layerService.getLayer('/api/layer/'+dbname)
                     .success(function (data) {
-                        leafletData.getMap().then(function (map) {
-
-                            var features = data.data[0].row_to_json.features;
-                            var geolay = L.geoJson(features, {
-                                style: myStyle,
-                                pointToLayer: function (feature, latlng) {
-                                    return L.circleMarker(latlng, geojsonMarkerOptions);
-                                },
-                                onEachFeature: function (feature, lay) {
-                                    feature.properties.datatype = datatype;
-                                    lay.bindPopup(name);
-                                    if (feature.properties.tourism) {
-                                        lay.bindPopup(feature.properties.tourism);
-                                    } else if (feature.properties.komm_navn) {
-                                        lay.bindPopup(feature.properties.komm_navn);
-                                    }
-                                }
-                            });
-                            //geolay.on('click', highlightFeature);
-                            geolay.addTo(map);
-                            var activelay = {name: name, visible: true, obj: geolay};
-                            $scope.activeLayers.push(activelay);
-                            layersIntheMap.push(name);
-                            //Stop loading icon, show success window
+                        if (data.data[0].row_to_json.features == null) {
+                            $scope.showSomethingWentWrong();
                             $scope.loading = false;
-                            $scope.showSuccessWindow();
-                        });
-
+                            return;
+                        } else {
+                            leafletData.getMap().then(function (map) {
+                                var features = data.data[0].row_to_json.features;
+                                var geolay = L.geoJson(features, {
+                                    style: myStyle,
+                                    pointToLayer: function (feature, latlng) {
+                                        return L.circleMarker(latlng, geojsonMarkerOptions);
+                                    },
+                                    onEachFeature: function (feature, lay) {
+                                        feature.properties.datatype = datatype;
+                                        lay.bindPopup(name);
+                                        if (feature.properties.tourism) {
+                                            lay.bindPopup(feature.properties.tourism);
+                                        } else if (feature.properties.komm_navn) {
+                                            lay.bindPopup(feature.properties.komm_navn);
+                                        }
+                                    }
+                                });
+                                //geolay.on('click', highlightFeature);
+                                geolay.addTo(map);
+                                var activelay = {name: name, visible: true, obj: geolay};
+                                $scope.activeLayers.push(activelay);
+                                layersIntheMap.push(name);
+                                //Stop loading icon, show success window
+                                $scope.loading = false;
+                                $scope.showSuccessWindow();
+                            });
+                        }
                     })
                     .error(function (error) {
                         $scope.loading = false;
-
+                        $scope.showSomethingWentWrong();
                         console.log(error);
                     });
             }
@@ -391,6 +395,21 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                 $scope.activeLayers.splice(i, 1); // Remove layer from activeLayers list
                 $scope.showRemovedSuccessWindow();
             });
+        };
+
+        // Drop a table from database
+        $scope.dropLayerTable = function(layer){
+            $scope.loading = true;
+            var layerinfo = {dbname: layer.dbname}
+            console.log(layerinfo);
+            layerService.postLayer('api/droptable/', layerinfo)
+                .success(function(data) {
+                    $scope.showRemovedSuccessWindow();
+                    $scope.loading = false;
+                }).error(function(error) {
+                    $scope.loading = false;
+                    $scope.showSomethingWentWrong(error);
+            })
         };
 
         // ** Upload new file
@@ -522,15 +541,15 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
         $scope.removeLayerWindow = function (ev) {
             $mdDialog.show({
                     controller: DialogController_removelayer,
-                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Remove layer from map</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="activelayer" md-on-open=""> <md-option ng-value="activelayer" ng-repeat="activelayer in activelayers">{{activelayer.name}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"><div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Remove Layer</md-button> </div></md-dialog>',
+                    template: '<md-dialog aria-label="Form"><md-content class="md-padding"><form name="buffer"><h3>Delete layer from the database</h3><div layout layout-sm="column"> <md-select placeholder="Choose layer" ng-model="activelayer" md-on-open=""> <md-option ng-value="activelayer" ng-repeat="activelayer in activelayers">{{activelayer.layername}}</md-option> </md-select></md-menu> </div><div layout layout-sm="column"><div class="md-dialog-actions" layout="row"> <span flex></span> <md-button ng-click="cancel()"> Cancel </md-button> <md-button ng-click="answer(hei)" class="md-primary">Delete Layer</md-button> </div></md-dialog>',
                     targetEvent: ev,
                     clickOutsideToClose: true,
                     locals: {
-                        layers: $scope.activeLayers
+                        layers: $scope.layers
                     }
                 })
                 .then(function (answer) {
-                    $scope.removeLayerFromMap(answer);
+                    $scope.dropLayerTable(answer);
                 }, function () {
                     $scope.alert = 'You cancelled the dialog.';
                 });
@@ -574,10 +593,10 @@ easygis.controller('menuController', ['$scope', '$timeout', '$mdBottomSheet', '$
                     $scope.alert = 'You cancelled the dialog.';
                 });
         };
-        $scope.showRemovedSuccessWindow = function (ev) {
+        $scope.showSomethingWentWrong = function (ev) {
             $mdDialog.show({
                     controller: DialogController_success,
-                    template: '<md-button ng-click="answer(ok)" class="md-raised md-primary"><md-icon md-svg-src="action:ic_done_24px"></md-icon>Something went wrong, could not add layer. Try again!</md-button></md-content>',
+                    template: '<md-button ng-click="answer(ok)" class="md-raised"><md-icon md-svg-src="action:ic_info_outline_24px"></md-icon>Something went wrong + ev</md-button></md-content>',
                     targetEvent: ev,
                     clickOutsideToClose: true
                 })

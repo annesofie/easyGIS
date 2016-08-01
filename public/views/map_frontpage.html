@@ -28,7 +28,7 @@
                     <p ng-show="(layers | filter:{datatype: 'Multi'}).length == 0"><i>There are no layers with multipe geometries in the database!</i></p>
                     <i>Unified layers</i>
                     <md-option ng-value="layer" ng-click="getLayerInfo(layer)" ng-repeat="layer in layers | filter: {layername: 'Union'}"><a>{{layer.layername}}</a></md-option>
-                    <p ng-show="(layers | filter:{datatype: 'Union'}).length == 0"><i>There are no unified layers!</i></p>
+                    <p ng-show="(layers | filter:{layername: 'Union'}).length == 0"><i>There are no unified layers!</i></p>
                 </md-select>
                 <div flex="15">
                 </div>
@@ -121,10 +121,10 @@
             </md-list-item>
             <md-divider></md-divider>
             <md-list-item class="md-2-line" role="link" md-ink-ripple ng-click="removeLayerWindow()">
-                <md-tooltip md-direction="right">Click here to remove a layer from the map</md-tooltip>
+                <md-tooltip md-direction="right">Click here to delete a layer from the database</md-tooltip>
                 <md-icon md-svg-icon="action:ic_delete_24px" flex="12"></md-icon>
                 <div class="md-list-item-text" flex="60">
-                    <span class="md-body-2">Remove Layer</span>
+                    <span class="md-body-2">Delete Layer</span>
                 </div>
             </md-list-item>
         </md-list>
@@ -180,6 +180,13 @@
                         <p class="helptext"><b>{{item.nr}}. {{item.name}}</b> <span class="ipsum" ng-if="hintHelp(item.nr)"> Description: {{item.desciption}}</span></p>
                     </md-checkbox>
                     <md-button class="helpbutton" ng-click="needhelp(item.nr)" ng-if="hidehelp(item.nr)"> <md-icon md-svg-icon="action:ic_help_24px"> </md-icon></md-button>
+                </div>
+                <h4>Different GIS operations</h4>
+                <div layout="column">
+                    <p><img src="../icons/buffer3.png" style="height: 64px"> Buffer (green) around point, line and polygon (red)</p>
+                    <p><img src="../icons/intersection.gif" style="width: 264px">Intersection: Returns the part of intersect that overlaps with the input layer. The input layer is the point, line or polygon layer you chose. </p>
+                    <p><img src="../icons/union.png" style="width: 264px"> Union: Overlapping geometries is joined together to one geometry</p>
+                    <p><img src="../icons/difference.png" style="width: 264px"> Difference: Returns the areas the two input layers that do not overlap</p>
                 </div>
 
             </div>
